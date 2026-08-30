@@ -152,11 +152,16 @@ export function convergedRing(n: number, seed = 5): Float32Array {
   const a = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     const th = rnd() * Math.PI * 2;
-    const R = 4.15 + gauss(rnd) * 0.16;
-    const tube = gauss(rnd) * 0.2;
+    // Sized to the end-of-scroll camera (z=7.6, fov 42): visible half-height
+    // is ~2.9 units, so R must stay under that or the ring is cropped and
+    // reads as an amber smear instead of a closed loop.
+    const R = 2.35 + gauss(rnd) * 0.12;
+    // The ring lives in the XY plane so it FACES the camera. In XZ it is
+    // edge-on from the default camera and reads as a flat horizontal smear,
+    // which is not a convergence — it is a mistake that looks like dust.
     a[i * 3] = Math.cos(th) * R;
-    a[i * 3 + 1] = tube + Math.sin(th * 3.0) * 0.14;
-    a[i * 3 + 2] = Math.sin(th) * R;
+    a[i * 3 + 1] = Math.sin(th) * R;
+    a[i * 3 + 2] = gauss(rnd) * 0.22;
   }
   return a;
 }

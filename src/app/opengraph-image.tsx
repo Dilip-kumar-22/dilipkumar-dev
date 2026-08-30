@@ -1,20 +1,25 @@
 import { ImageResponse } from 'next/og';
 import { PERSON } from '@/lib/content';
 
-export const alt = `${PERSON.name} — ${PERSON.role}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+export const alt = `${PERSON.name} — ${PERSON.role}`;
 
-/** Share card. Same palette and same idea as the site: noise resolving to signal. */
-export default function OG() {
-  const dots = Array.from({ length: 140 }, (_, i) => {
-    // deterministic scatter — no Math.random, so the card is stable
-    const a = (i * 2654435761) % 4294967296;
-    const x = (a % 1200) / 1200;
-    const y = ((a >> 8) % 630) / 630;
-    const r = 1 + ((a >> 16) % 3);
-    return { x: x * 1200, y: y * 630, r, o: 0.10 + ((a >> 20) % 40) / 100 };
-  });
+/**
+ * The share card. This is the first thing a recruiter sees when the link is
+ * pasted into Slack or LinkedIn, so it carries the same idea as the site:
+ * a loss curve descending, cold ground, one amber signal.
+ */
+export default function OpengraphImage() {
+  // a believable descending loss curve, drawn as an SVG path
+  const pts: string[] = [];
+  for (let i = 0; i <= 60; i++) {
+    const u = i / 60;
+    const x = 60 + u * 1080;
+    const noise = Math.sin(i * 2.3) * 10 * Math.exp(-2.2 * u);
+    const y = 250 + (1 - (0.42 + 3.6 * Math.exp(-5.2 * u)) / 4.2) * 250 + noise;
+    pts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`);
+  }
 
   return new ImageResponse(
     (
@@ -26,41 +31,54 @@ export default function OG() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           background: '#12161d',
-          padding: 68,
-          position: 'relative',
+          padding: '64px 72px',
+          fontFamily: 'sans-serif',
         }}
       >
-        {dots.map((d, i) => (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div
-            key={i}
             style={{
-              position: 'absolute',
-              left: d.x,
-              top: d.y,
-              width: d.r * 2,
-              height: d.r * 2,
-              borderRadius: 99,
-              background: d.x > 700 ? '#ffab4d' : '#cfe3f2',
-              opacity: d.o,
+              display: 'flex',
+              fontSize: 20,
+              letterSpacing: 6,
+              textTransform: 'uppercase',
+              color: '#8a8f99',
             }}
-          />
-        ))}
-
-        <div style={{ display: 'flex', fontSize: 21, letterSpacing: 6, color: '#8b98a8' }}>
-          {PERSON.role.toUpperCase()}
+          >
+            noise → signal
+          </div>
+          <div style={{ display: 'flex', fontSize: 20, color: '#f0a339', letterSpacing: 3 }}>
+            loss 0.438
+          </div>
         </div>
+
+        <svg
+          width="1080"
+          height="200"
+          viewBox="0 60 1200 460"
+          style={{ position: 'absolute', left: 60, top: 180, opacity: 0.55 }}
+        >
+          <path d={pts.join(' ')} fill="none" stroke="#f0a339" strokeWidth="4" strokeLinecap="round" />
+        </svg>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontSize: 104, color: '#f4f7fb', lineHeight: 1.02 }}>
+          <div style={{ display: 'flex', fontSize: 96, color: '#f4f5f7', lineHeight: 1.05 }}>
             {PERSON.name}
           </div>
-          <div style={{ display: 'flex', fontSize: 34, color: '#ffab4d', marginTop: 14 }}>
-            Pre-training a language model from scratch.
+          <div style={{ display: 'flex', fontSize: 32, color: '#f0a339', marginTop: 14 }}>
+            {PERSON.role} · pre-training a 200M-parameter model from scratch
           </div>
-        </div>
-
-        <div style={{ display: 'flex', fontSize: 22, color: '#8b98a8', letterSpacing: 2 }}>
-          github.com/Dilip-kumar-22
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 22,
+              color: '#8a8f99',
+              marginTop: 26,
+              letterSpacing: 2,
+            }}
+          >
+            Rust · PyTorch · on-device inference · multi-agent systems
+          </div>
         </div>
       </div>
     ),

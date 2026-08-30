@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="12" fill="#12161d"/>
-  <path d="M10 14 C 18 15, 22 34, 30 40 C 38 46, 46 47, 54 47"
-        fill="none" stroke="#ffab4d" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="54" cy="47" r="4.5" fill="#ffab4d"/>
+  <!-- a loss curve descending: the site's whole idea at 16px -->
+  <path d="M10 15 C 18 15, 20 38, 30 42 C 40 46, 46 47, 54 47"
+        fill="none" stroke="#f0a339" stroke-width="5.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="54" cy="47" r="5" fill="#f0a339"/>
 </svg>

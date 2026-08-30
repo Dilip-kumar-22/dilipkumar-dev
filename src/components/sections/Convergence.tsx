@@ -42,7 +42,7 @@ export default function Convergence() {
               <span className="t-label transition-colors duration-500 group-hover:text-signal">
                 {l.label}
               </span>
-              <span className="t-data break-all text-sm text-hi">{l.value}</span>
+              <span className="t-data text-[0.82rem] leading-relaxed text-hi [overflow-wrap:anywhere]">{l.value}</span>
               <span className="mt-2 h-px w-8 bg-line transition-all duration-500 group-hover:w-full group-hover:bg-signal" />
             </a>
           ))}

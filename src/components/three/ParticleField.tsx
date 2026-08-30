@@ -237,7 +237,9 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
 
     // camera: a slow dolly in, plus eased pointer parallax
     const cam = state.camera;
-    const zTarget = 10.4 + (5.6 - 10.4) * smoothstep(0, 1, p);
+    // Ends at 7.6, not 5.6 — far enough back that the converged ring closes
+    // inside the frame instead of running off the top and bottom edges.
+    const zTarget = 10.4 + (7.6 - 10.4) * smoothstep(0, 1, p);
     cam.position.z += (zTarget - cam.position.z) * 0.045;
 
     if (!reduced) {

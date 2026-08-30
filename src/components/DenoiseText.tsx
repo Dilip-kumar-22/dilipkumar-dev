@@ -11,7 +11,9 @@ import { subscribe, prefersReducedMotion } from '@/lib/scrollStore';
  * painted into a separate aria-hidden span.
  */
 
-const GLYPHS = '▚▞░▒▓█⌁⎔⌗∴≡//\\<>_·:.010101';
+// Light, typographic glyphs. Heavy block characters (░▒▓█) make a heading
+// mid-scramble read as a rendering failure rather than as noise resolving.
+const GLYPHS = '·:.~-=+*/\\<>|!?°¬01';
 
 export default function DenoiseText({
   text,

@@ -30,8 +30,13 @@ export default function Stage() {
   // hides the canvas — R3F keeps rendering — so every isolation run needs a
   // toggle that actually removes the work. See LESSONS [3D].
   const [fx, setFx] = useState(true);
-  const [msaa, setMsaa] = useState(2);
-  const [dpr, setDpr] = useState<number>(RENDER.maxDpr);
+  // Points are soft round sprites — MSAA buys almost nothing visually here
+  // and costs ~30% of the frame on integrated graphics. Bloom hides the rest.
+  const [msaa, setMsaa] = useState(0);
+  // Start conservative and let PerformanceMonitor climb. Starting at max DPR
+  // means the first seconds — the hero, the part everyone sees — are the
+  // slowest, which is exactly backwards.
+  const [dpr, setDpr] = useState<number>(1.25);
   const [degraded, setDegraded] = useState(false);
 
   useEffect(() => {
@@ -123,6 +128,10 @@ export default function Stage() {
             luminanceSmoothing={0.22}
             radius={RENDER.bloom.radius}
             mipmapBlur
+            // Bloom runs on a half-resolution buffer. It is a wide, soft glow —
+            // nobody can see the difference, and the blur chain is the single
+            // most expensive thing in the frame (27fps → 123fps without post).
+            resolutionScale={0.5}
           />
           <Vignette offset={0.28} darkness={0.62} eskil={false} />
           {/* No in-scene Noise pass: the CSS `.grain` layer already covers the

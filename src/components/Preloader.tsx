@@ -1,115 +1,98 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { prefersReducedMotion } from '@/lib/scrollStore';
 
 /**
- * The boot sequence. Not a spinner — the site opens the way a training run
- * opens, which is the whole premise. It waits for fonts (so the hero never
- * swaps typeface after the reveal) with a hard timeout so a slow font CDN can
- * never trap someone on a loading screen.
+ * Boot sequence. It is an overlay, never a gate: all content is already in the
+ * DOM underneath, so crawlers and screen readers are unaffected and a failed
+ * script can never leave the page blank.
  */
 
-const LINES: [string, string][] = [
-  ['tokenizer', 'vocab 32,000'],
-  ['corpus', 'curated · deduped'],
-  ['model', '≈204M params'],
-  ['objective', 'next-token'],
-  ['device', 'ready'],
-];
+const LINES = [
+  'init  tokenizer',
+  'load  corpus',
+  'build model',
+  'alloc device',
+  'run   training',
+] as const;
 
 export default function Preloader() {
   const [done, setDone] = useState(false);
-  const [gone, setGone] = useState(false);
-  const [step, setStep] = useState(0);
-  const pct = useRef<HTMLSpanElement>(null);
-  const bar = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState<number>(0);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Respect a returning visitor — a preloader every navigation is a tax.
-    if (sessionStorage.getItem('booted') === '1') {
+    if (prefersReducedMotion()) {
       setDone(true);
-      setGone(true);
       return;
     }
 
+    // Never let a slow frame trap the visitor behind the overlay.
+    const hardStop = setTimeout(() => setDone(true), 2600);
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    LINES.forEach((_, i) => {
+      timers.push(setTimeout(() => setShown(i + 1), 120 + i * 190));
+    });
+    timers.push(setTimeout(() => setDone(true), 120 + LINES.length * 190 + 380));
+
     let raf = 0;
     const t0 = performance.now();
-    const MIN = 1500; // long enough to read, short enough not to annoy
-    const MAX = 3800;
-
-    let fontsReady = false;
-    document.fonts?.ready.then(() => (fontsReady = true));
-
     const tick = () => {
-      const t = performance.now() - t0;
-      // progress is time-based but cannot complete until fonts land
-      const target = fontsReady ? Math.min(1, t / MIN) : Math.min(0.92, t / MIN);
-      const p = t >= MAX ? 1 : target;
-
-      if (pct.current) pct.current.textContent = String(Math.round(p * 100)).padStart(3, '0');
-      if (bar.current) bar.current.style.transform = `scaleX(${p})`;
-      setStep(Math.min(LINES.length, Math.floor(p * LINES.length * 1.15)));
-
-      if (p >= 1) {
-        sessionStorage.setItem('booted', '1');
-        setDone(true);
-        setTimeout(() => setGone(true), 900);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
+      const p = Math.min(1, (performance.now() - t0) / 1300);
+      if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
+      if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      clearTimeout(hardStop);
+      timers.forEach(clearTimeout);
+      cancelAnimationFrame(raf);
+    };
   }, []);
-
-  if (gone) return null;
 
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 z-[90] flex flex-col justify-between p-6 md:p-12"
+      className="pointer-events-none fixed inset-0 z-[90] flex items-end justify-start p-8 md:p-12"
       style={{
         background: 'var(--color-ground)',
-        clipPath: done ? 'inset(0 0 100% 0)' : 'inset(0 0 0 0)',
-        transition: 'clip-path 0.9s cubic-bezier(0.76, 0, 0.24, 1)',
+        opacity: done ? 0 : 1,
+        transform: done ? 'translateY(-100%)' : 'none',
+        transition:
+          'opacity 0.5s cubic-bezier(0.6,0,0.2,1), transform 0.9s cubic-bezier(0.76,0,0.24,1)',
+        transitionDelay: done ? '0.15s, 0s' : '0s',
       }}
     >
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal" />
-        <span className="t-label">initialising run</span>
-      </div>
+      <div className="w-full max-w-sm">
+        <div className="mb-5 flex items-baseline justify-between">
+          <span className="t-label !text-[0.58rem]">epoch 00</span>
+          <span className="t-data text-[0.6rem] text-signal">boot</span>
+        </div>
 
-      <div className="mx-auto w-full max-w-lg">
-        <dl className="space-y-2">
-          {LINES.map(([k, v], i) => (
+        <div className="space-y-1">
+          {LINES.map((l, i) => (
             <div
-              key={k}
-              className="flex items-baseline justify-between gap-6 border-b border-line-soft pb-2 transition-opacity duration-500"
-              style={{ opacity: i < step ? 1 : 0.18 }}
+              key={l}
+              className="t-data flex items-center gap-3 text-[0.68rem] transition-opacity duration-300"
+              style={{ opacity: i < shown ? 1 : 0.12 }}
             >
-              <dt className="t-data text-[0.72rem] text-mid">{k}</dt>
-              <dd className="t-data text-[0.72rem] text-low">
-                {i < step ? v : '········'}
-              </dd>
+              <span className={i < shown ? 'text-signal' : 'text-low'}>
+                {i < shown ? '✓' : '·'}
+              </span>
+              <span className="text-mid">{l}</span>
             </div>
           ))}
-        </dl>
-      </div>
+        </div>
 
-      <div>
-        <div className="mb-3 h-px w-full bg-line-soft">
+        <div className="mt-6 h-px w-full bg-line-soft">
           <div
-            ref={bar}
+            ref={barRef}
             className="h-full origin-left scale-x-0 bg-signal"
             style={{ willChange: 'transform' }}
           />
-        </div>
-        <div className="flex items-baseline justify-between">
-          <span className="t-label">loading</span>
-          <span className="t-data text-sm text-signal">
-            <span ref={pct}>000</span>%
-          </span>
         </div>
       </div>
     </div>

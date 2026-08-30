@@ -9,7 +9,7 @@
 
 export const PERSON = {
   name: 'Dilip Kumar',
-  alias: 'Samil',
+  alias: 'Samael',
   role: 'AI/ML Engineer',
   subrole: 'Aspiring AI Researcher & Model Trainer',
   location: 'Punjab, India',

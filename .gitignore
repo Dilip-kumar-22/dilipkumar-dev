@@ -40,5 +40,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# verification artifacts
+# verification + profiling artifacts
 .verify/
+scripts/canvascheck.mjs
+scripts/net.mjs
+scripts/profile*.mjs
+scripts/control.mjs
+scripts/pn.mjs
+scripts/settle.mjs
+
+# tooling scratch
+.claude/
+**/.claude/

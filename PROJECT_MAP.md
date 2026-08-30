@@ -1,136 +1,128 @@
 # PROJECT_MAP — dilipkumar-dev
 
-Every significant file, its purpose, and how the pieces connect.
-Read this before working; update it whenever files are added, moved or removed.
+Every significant file, its purpose, and how it connects. (Updated 2026-08-30)
 
 ```mermaid
 graph TD
-    subgraph App["app/ — routes"]
-        LAYOUT["layout.tsx<br/>fonts (Instrument Serif / Archivo / IBM Plex Mono)<br/>metadata + OG + Preloader + Cursor"]
-        HOME["page.tsx<br/>the scroll narrative — 9 chapters"]
-        CASE["work/[slug]/page.tsx<br/>5 SSG case studies"]
-        NF["not-found.tsx<br/>'Out of distribution'"]
-        CSS["globals.css<br/>OKLCH tokens · .shell rails · .reveal · grain"]
-        ICON["icon.svg — loss-curve mark"]
-        OG["opengraph-image.tsx — share card"]
+    subgraph Routes["App Router"]
+        LAYOUT["app/layout.tsx<br/>fonts (Instrument Serif / Archivo / IBM Plex Mono), metadata, OG"]
+        HOME["app/page.tsx<br/>the scroll narrative — 9 sections"]
+        CASE["app/work/[slug]/page.tsx<br/>5 static case studies"]
+        NF["app/not-found.tsx<br/>404 — 'Loss went to NaN'"]
+        OG["app/opengraph-image.tsx<br/>dynamic share card"]
+        ICON["app/icon.svg<br/>favicon: a descending loss curve"]
+        CSS["app/globals.css<br/>OKLCH tokens, .shell rail gutters, .reveal, grain"]
     end
 
-    subgraph Lib["lib/ — state + data"]
-        CONTENT["content.ts<br/>SINGLE SOURCE OF TRUTH<br/>person · projects · roadmap · skills"]
-        OKLCH["oklch.ts<br/>OKLCH to sRGB + verified RENDER constants"]
-        SCROLL["scrollStore.ts<br/>one rAF loop · progress · rAF-driven reveals"]
-        FOCUS["focusStore.ts<br/>hovered project (DOM writes, shader reads)"]
+    subgraph Data["Single source of truth"]
+        CONTENT["lib/content.ts<br/>PERSON · EDUCATION · PROJECTS · ROADMAP · RESEARCH · SKILLS · CHAPTERS"]
+        OKLCH["lib/oklch.ts<br/>OKLCH→sRGB + verified RENDER constants"]
     end
 
-    subgraph Three["components/three/ — the field"]
-        STAGE["Stage.tsx<br/>Canvas · composer · adaptive DPR<br/>no-WebGL + reduced-motion fallbacks"]
-        FIELD["ParticleField.tsx<br/>5-target morph · cursor wake · focus pull<br/>stops measured from real sections"]
-        GLSL["glsl.ts<br/>simplex · flowField · point vert/frag"]
-        TARGETS["targets.ts<br/>noise · name · swiss roll · constellation · ring"]
+    subgraph State["Per-frame state (no React re-renders)"]
+        SCROLL["lib/scrollStore.ts<br/>one rAF loop · progress/velocity · rAF-driven reveals"]
+        FOCUS["lib/focusStore.ts<br/>hovered project → 3D uniform"]
+        SP["components/ScrollProvider.tsx<br/>Lenis + starts the loop"]
     end
 
-    subgraph Hud["components/hud/"]
-        LOSS["LossCurve.tsx<br/>THE scroll indicator — a real loss curve"]
-        NAV["Nav.tsx<br/>chapter rail, active from frame loop"]
+    subgraph Three["WebGL"]
+        STAGE["three/Stage.tsx<br/>Canvas · adaptive DPR · half-res bloom · no-WebGL fallback"]
+        FIELD["three/ParticleField.tsx<br/>5-target weighted morph · cursor wake · focus pull"]
+        GLSL["three/glsl.ts<br/>simplex + flow field · vertex/fragment"]
+        TARGETS["three/targets.ts<br/>noise · name · swiss roll · constellation · ring"]
     end
 
-    subgraph Sections["components/sections/"]
-        SEC["Hero · Identity · Thesis · Signal · Work<br/>Research · Trajectory · Record · Convergence"]
+    subgraph UI["Chrome + sections"]
+        SCRIM["components/Scrim.tsx<br/>legibility layer between field and text"]
+        PRE["components/Preloader.tsx<br/>boot sequence (overlay, never a gate)"]
+        DEN["components/DenoiseText.tsx<br/>headings resolve out of noise"]
+        LOSS["hud/LossCurve.tsx<br/>the scrollbar IS a loss curve"]
+        NAV["hud/Nav.tsx<br/>chapter rail"]
+        SECT["sections/*.tsx<br/>Hero · Identity · Thesis · Signal · Work<br/>Research · Trajectory · Record · Convergence"]
     end
 
-    subgraph Shared["components/"]
-        SCRIM["Scrim.tsx — legibility layer (z-5)"]
-        DENOISE["DenoiseText.tsx — headings resolve from glyph noise"]
-        PRE["Preloader.tsx — the boot sequence"]
-        CUR["Cursor.tsx — reticle, idles its own rAF"]
-        SP["ScrollProvider.tsx — Lenis + startLoop"]
-    end
-
-    subgraph Scripts["scripts/ — evidence, not opinions"]
-        VERIFY["verify.mjs<br/>fps · console · reveals · blown highlights · shots"]
-        PROF["profile*.mjs · pn.mjs · settle.mjs<br/>isolation with a blank-page control"]
+    subgraph Verify["Evidence"]
+        VER["scripts/verify.mjs<br/>fps · reveals · blown highlights · screenshots @360/768/1440"]
+        WL["WORKLOG.md"]
+        PM["PROJECT_MAP.md — this file"]
     end
 
     LAYOUT --> HOME
     LAYOUT --> CASE
     LAYOUT --> NF
-    LAYOUT --> PRE
-    LAYOUT --> CUR
-    LAYOUT --> CSS
-    LAYOUT --> CONTENT
+    CSS --> LAYOUT
+    CONTENT --> HOME
+    CONTENT --> CASE
+    CONTENT --> OG
+    CONTENT --> SECT
+    CONTENT --> TARGETS
+    OKLCH --> STAGE
+    OKLCH --> FIELD
+    OKLCH -. "same palette" .-> CSS
 
-    HOME --> SP
+    HOME --> PRE
     HOME --> STAGE
     HOME --> SCRIM
     HOME --> LOSS
     HOME --> NAV
-    HOME --> SEC
-
-    CASE --> SP
+    HOME --> SECT
+    HOME --> SP
     CASE --> STAGE
     CASE --> SCRIM
-    CASE --> DENOISE
+    CASE --> SP
 
     SP --> SCROLL
+    SCROLL --> LOSS
+    SCROLL --> NAV
+    SCROLL --> DEN
+    SCROLL --> FIELD
+    SECT --> DEN
+    SECT -->|"hover"| FOCUS
+    FOCUS --> FIELD
     STAGE --> FIELD
-    STAGE --> OKLCH
     FIELD --> GLSL
     FIELD --> TARGETS
-    FIELD --> SCROLL
-    FIELD --> FOCUS
-    FIELD --> OKLCH
-    TARGETS --> CONTENT
+    VER -.->|"measures"| HOME
 
-    LOSS --> SCROLL
-    NAV --> SCROLL
-    NAV --> CONTENT
-    SEC --> CONTENT
-    SEC --> DENOISE
-    SEC --> FOCUS
-    DENOISE --> SCROLL
-    OG --> CONTENT
-    CSS --> OKLCH
-
-    VERIFY -.measures.-> HOME
-    PROF -.measures.-> STAGE
-
-    classDef route fill:#1d2430,stroke:#ffab4d,color:#f4f7fb;
-    classDef lib fill:#16202b,stroke:#5fb6d9,color:#f4f7fb;
-    classDef three fill:#231d18,stroke:#ffab4d,color:#f4f7fb;
-    classDef hud fill:#1a1f29,stroke:#8b98a8,color:#f4f7fb;
-    classDef tool fill:#151a22,stroke:#4f5a68,color:#cfe3f2;
-    class LAYOUT,HOME,CASE,NF,CSS,ICON,OG route;
-    class CONTENT,OKLCH,SCROLL,FOCUS lib;
+    classDef route fill:#ECE6FF,stroke:#7C4DFF,color:#0F172A;
+    classDef data fill:#DCF0FB,stroke:#1E9DE3,color:#0F172A;
+    classDef state fill:#FBE2F0,stroke:#E5439B,color:#0F172A;
+    classDef three fill:#FFE9CC,stroke:#F0A339,color:#0F172A;
+    classDef ui fill:#E2F3E5,stroke:#46A758,color:#0F172A;
+    classDef ev fill:#E7EAF3,stroke:#5B6B9E,color:#0F172A;
+    class LAYOUT,HOME,CASE,NF,OG,ICON,CSS route;
+    class CONTENT,OKLCH data;
+    class SCROLL,FOCUS,SP state;
     class STAGE,FIELD,GLSL,TARGETS three;
-    class LOSS,NAV,SEC,SCRIM,DENOISE,PRE,CUR,SP hud;
-    class VERIFY,PROF tool;
+    class SCRIM,PRE,DEN,LOSS,NAV,SECT ui;
+    class VER,WL,PM ev;
 ```
 
-## Rules this map enforces
+## Load-bearing rules (break these and the site breaks)
 
-- **`content.ts` is the only place facts live.** No section hardcodes a claim.
-  Adding a project means adding it there; the constellation geometry, the nav,
-  the case-study routes and the OG card all follow automatically.
-- **Nothing renders per-frame through React.** `scrollStore` is an external
-  store; `LossCurve`, `Nav`, `ParticleField` and `Cursor` mutate DOM nodes or
-  shader uniforms directly. A `setState` per frame would cost the 3D budget.
-- **Layer order is load-bearing:** canvas `z-0` → scrim `z-5` → content `z-10`
-  → cursor `z-80` → preloader `z-90`. `body` must stay transparent; an opaque
-  background or a negative z-index on the canvas hides the scene while it keeps
-  rendering.
-- **Render constants in `oklch.ts` are verified, not guessed.** Bloom threshold
-  0.92 and exposure 0.96 were confirmed by screenshot analysis (0% blown
-  highlights). Re-screenshot before changing them.
-- **`scripts/verify.mjs` is the gate.** Any perf claim must come with a
-  blank-page control reading above 100fps, or the measurement is not trustworthy.
+- **`body` must stay `background: transparent`.** The canvas is a fixed layer at
+  `z-0`; an opaque body (or a negative z-index on the canvas) paints over the
+  entire 3D scene while it keeps rendering — invisible, still costing frames.
+- **`uSize` in the particle shader is a scale, not pixels.** `gl_PointSize`
+  multiplies it by `(300 / -z)` ≈ 30×. Keep it ~0.085. At 2.0 you get 60px
+  points and 4fps.
+- **Bloom stays at `resolutionScale={0.5}` and `luminanceThreshold` ≥ 0.9.**
+  Full-res bloom is 4.5× the frame budget; a low threshold blows the hero white.
+- **The colour grade must run after `OutputPass`** (display space), per ORBIT.
+- **`.shell`, not ad-hoc padding.** It reserves the left nav rail and right loss
+  curve gutters; bare `px-6 lg:px-20` puts text under the instrumentation.
+- **Morph stops are measured from real section ids** (`boot`, `identity`,
+  `signal`, `work`, `convergence`). Renaming a section id silently falls back to
+  hardcoded stops and the field desyncs from the copy.
+- **Scroll reveals run in the rAF loop**, never IntersectionObserver — IO
+  thresholds stall on instant scroll jumps with Lenis attached.
 
-## Commands
+## Verifying a change
 
 ```bash
-npm run dev                                  # dev server
-npm run build && npx next start -p 3000      # production
-node scripts/verify.mjs --url http://localhost:3000   # evidence
+npm run build && npx next start -p 3001
+node scripts/verify.mjs --url http://localhost:3001 --out .verify
 ```
 
-Debug query params (production-safe, default off): `?fx=0` disables
-post-processing, `?msaa=N` sets multisampling, `?n=N` overrides particle count.
+Gate: 0 console errors, `blown` < 1.5% at every stop, fps ≥ 60 at 1440.
+A blank-page control under 100fps means the run is polluted — discard it.

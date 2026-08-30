@@ -29,7 +29,7 @@ mkdirSync(OUT, { recursive: true });
 
 const report = { url: URL, when: new Date().toISOString(), viewports: [], errors: [], warnings: [] };
 
-const browser = await chromium.launch({
+const LAUNCH = {
   channel: 'chrome',
   headless: false,
   args: [
@@ -40,9 +40,12 @@ const browser = await chromium.launch({
     '--disable-renderer-backgrounding',
     '--disable-features=CalculateNativeWinOcclusion',
   ],
-});
+};
 
 for (const width of WIDTHS) {
+  // A FRESH browser per viewport. Sharing one across viewports let GPU
+  // pressure accumulate and under-reported the last viewport by ~5x.
+  const browser = await chromium.launch(LAUNCH);
   const height = width < 500 ? 780 : width < 900 ? 1024 : 900;
   const ctx = await browser.newContext({
     viewport: { width, height },
@@ -163,13 +166,23 @@ for (const width of WIDTHS) {
     shots.push({ progress: p, file: file.split(/[\\/]/).pop(), ...(lum || {}) });
   }
 
-  report.viewports.push({ width, height, fps, ...probe, errors, shots });
+  // steady-state fps, measured again after all the scroll work
+  const fpsSettled = await page.evaluate(async () => {
+    let f = 0;
+    const t0 = performance.now();
+    await new Promise((res) => {
+      const loop = () => { f++; if (performance.now() - t0 > 1400) return res(); requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    });
+    return Math.round(f / ((performance.now() - t0) / 1000));
+  });
+
+  report.viewports.push({ width, height, fps, fpsSettled, ...probe, errors, shots });
   if (errors.length) report.errors.push(...errors.map((e) => `[${width}] ${e}`));
 
   await ctx.close();
+  await browser.close();
 }
-
-await browser.close();
 
 writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 

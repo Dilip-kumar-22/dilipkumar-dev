@@ -1,6 +1,7 @@
 import Stage from '@/components/three/Stage';
 import ScrollProvider from '@/components/ScrollProvider';
 import Scrim from '@/components/Scrim';
+import Preloader from '@/components/Preloader';
 import LossCurve from '@/components/hud/LossCurve';
 import Nav from '@/components/hud/Nav';
 
@@ -17,6 +18,7 @@ import Convergence from '@/components/sections/Convergence';
 export default function Home() {
   return (
     <ScrollProvider>
+      <Preloader />
       <Stage />
       <Scrim />
       <LossCurve />

@@ -178,8 +178,13 @@ void main(){
   // an event you can see rather than something you have to be told about.
   float lock = smoothstep(0.72, 1.0, uResolve);
   float lum = (0.16 + pow(vRand, 3.0) * 1.25) * tw * fade
-            * (1.0 + vHot * 1.4) * (1.0 + lock * 0.85);
+            * (1.0 + vHot * 1.4) * (1.0 + lock * 0.40);
 
-  gl_FragColor = vec4(col * lum, a * uOpacity * fade);
+  // A locked shape packs every particle into a fraction of the screen, and
+  // additive blending stacks them — that is what blows the highlights, not
+  // the brightness of any single point. Thin the alpha as density rises.
+  float alpha = a * uOpacity * fade * (1.0 - lock * 0.34);
+
+  gl_FragColor = vec4(col * lum, alpha);
 }
 `;
