@@ -67,11 +67,16 @@ export default function DenoiseText({
     const stop = subscribe(() => {
       if (started) return;
       const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight * 0.86 && r.bottom > 0) {
-        started = true;
-        run();
-        stop();
-      }
+      if (r.top >= window.innerHeight * 0.86) return; // still below the fold
+
+      started = true;
+      // If it is already fully above the viewport the visitor has scrolled
+      // past it — animating now would be invisible, and requiring the element
+      // to still be on screen (r.bottom > 0) left headings stranded as dots
+      // forever. Resolve instantly instead.
+      if (r.bottom <= 0) el.textContent = text;
+      else run();
+      stop();
     });
 
     return () => {
