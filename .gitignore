@@ -55,3 +55,11 @@ scripts/settle.mjs
 
 # raw capture masters (transcoded into public/media)
 asset/
+
+# coursework and personal documents — these live on the local machine only,
+# never in a public portfolio repo
+submission/
+*CA1*
+*PEL132*
+presentation-script.md
+comic-strip.html
