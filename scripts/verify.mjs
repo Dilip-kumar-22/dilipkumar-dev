@@ -63,6 +63,14 @@ for (const width of WIDTHS) {
   await page.goto(URL, { waitUntil: 'networkidle', timeout: 60_000 });
   await page.waitForTimeout(2500); // fonts + first 3D frames
 
+  // The site now opens on the entry gate. Get through it before measuring,
+  // or every screenshot is a photo of the front door.
+  await page.evaluate(() => {
+    const d = document.querySelector('[role=dialog]');
+    if (d) d.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+  });
+  await page.waitForTimeout(1500);
+
   // ---- measured fps -------------------------------------------------
   const fps = await page.evaluate(async () => {
     let f = 0;

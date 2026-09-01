@@ -7,6 +7,7 @@ import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import { useEffect, useState } from 'react';
 import ParticleField from './ParticleField';
+import PlayerCard from './PlayerCard';
 import { RENDER } from '@/lib/oklch';
 import { prefersReducedMotion } from '@/lib/scrollStore';
 
@@ -23,7 +24,7 @@ function webglAvailable() {
  * The 3D backdrop. Fixed behind all content — the text is real DOM, so the
  * site stays readable, selectable and indexable with the canvas removed.
  */
-export default function Stage() {
+export default function Stage({ card = false }: { card?: boolean }) {
   const [ok, setOk] = useState<boolean | null>(null);
   const [reduced, setReduced] = useState(false);
   // Real isolation switches for the profiler. `canvas{display:none}` only
@@ -84,6 +85,9 @@ export default function Stage() {
           gl.toneMappingExposure = RENDER.exposure;
           gl.outputColorSpace = THREE.SRGBColorSpace;
           scene.background = new THREE.Color('#12161d');
+          // debug handle: lets the verification harness inspect real scene
+          // state instead of inferring it from screenshots
+          (window as unknown as { __three?: unknown }).__three = { scene, gl };
           // LESSON [3D]: assert the scene actually got populated instead of
           // trusting the wiring — an empty canvas is a silent failure.
           if (process.env.NODE_ENV === 'development') {
@@ -113,6 +117,7 @@ export default function Stage() {
         />
 
         <ParticleField reduced={reduced} />
+        {card && <PlayerCard reduced={reduced} />}
 
         {fx && !degraded && (
         <EffectComposer

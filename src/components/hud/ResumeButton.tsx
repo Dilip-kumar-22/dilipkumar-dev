@@ -7,7 +7,7 @@ import Link from 'next/link';
  */
 export default function ResumeButton() {
   return (
-    <div className="fixed right-4 top-4 z-50 flex items-center gap-2 md:right-6 md:top-6">
+    <div className="hud-fixed fixed right-4 top-4 z-50 flex items-center gap-2 md:right-6 md:top-6">
       <Link
         href="/resume"
         className="group flex items-center gap-2 border border-line bg-ground/70 px-3.5 py-2 backdrop-blur-md transition-colors duration-300 hover:border-signal hover:bg-ground-1/80 md:px-4 md:py-2.5"

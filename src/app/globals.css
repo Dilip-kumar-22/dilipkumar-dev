@@ -206,6 +206,26 @@
 }
 
 /* ============================================================
+   The entry gate. While it is open the site is present in the DOM
+   but not shown; entering fades it up rather than popping it in.
+   ============================================================ */
+main,
+nav[aria-label='Chapters'],
+aside,
+.hud-fixed {
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+
+html.gate-open main,
+html.gate-open nav[aria-label='Chapters'],
+html.gate-open aside,
+html.gate-open .hud-fixed {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.25s ease;
+}
+
+/* ============================================================
    Reduced motion: parity, not removal. Content still fully
    readable and fully revealed — only the movement stops.
    ============================================================ */
