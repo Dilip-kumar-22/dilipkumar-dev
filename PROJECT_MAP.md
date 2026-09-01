@@ -43,6 +43,7 @@ graph TD
 
     subgraph Verify["Evidence"]
         VER["scripts/verify.mjs<br/>fps · reveals · blown highlights · screenshots @360/768/1440"]
+        PDF["scripts/make-pdf.mjs<br/>/resume -> public PDF (page geometry lives in resume.css)"]
         WL["WORKLOG.md"]
         PM["PROJECT_MAP.md — this file"]
     end
@@ -126,3 +127,19 @@ node scripts/verify.mjs --url http://localhost:3001 --out .verify
 
 Gate: 0 console errors, `blown` < 1.5% at every stop, fps ≥ 60 at 1440.
 A blank-page control under 100fps means the run is polluted — discard it.
+
+## What does NOT belong in this repo
+
+It is public, and it is the repository a recruiter opens. Keep out of it:
+
+- **Coursework and academic submissions.** The PEL132 pack (presentation
+  script, comic strip, marks breakdown, registration number) was committed
+  here once and had to be purged from history with `git filter-repo`. It now
+  lives at `Documents/PEL132-submission`, and `.gitignore` blocks `submission/`.
+- **One-off debug scripts.** `scripts/` holds five things that are part of the
+  workflow. Profiling spikes and screenshot one-offs get deleted, not committed.
+- **Raw capture masters.** `asset/` (~110 MB of screen recordings) is ignored;
+  only the transcoded web media in `public/media` is tracked.
+
+The CV in `public/` is public **on purpose** — the site offers it for download.
+It carries a phone number and email, which is a deliberate choice, not a leak.
