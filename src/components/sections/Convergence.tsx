@@ -30,7 +30,23 @@ export default function Convergence() {
           what you are building, I would like to hear about it.
         </p>
 
-        <div className="mt-20 grid gap-px border border-line-soft bg-line-soft sm:grid-cols-2 lg:grid-cols-4">
+        <div className="reveal reveal-1 mt-16 flex flex-wrap gap-4">
+          <a
+            href={PERSON.resume.page}
+            className="t-data border border-signal-deep px-6 py-3.5 text-sm text-signal transition-colors duration-300 hover:bg-signal hover:text-ground"
+          >
+            Read the résumé →
+          </a>
+          <a
+            href={PERSON.resume.pdf}
+            download
+            className="t-data border border-line px-6 py-3.5 text-sm text-hi transition-colors duration-300 hover:border-signal hover:text-signal"
+          >
+            Download PDF
+          </a>
+        </div>
+
+        <div className="mt-12 grid gap-px border border-line-soft bg-line-soft sm:grid-cols-2 lg:grid-cols-4">
           {LINKS.map((l, i) => (
             <a
               key={l.label}

@@ -1,10 +1,12 @@
 /**
- * Single source of truth for every fact on this site.
+ * Single source of truth for every fact on this site AND on the résumé page.
  *
- * RULE: nothing in this file is aspirational unless `status` says so.
- * Shipped work and roadmap work never share a visual language — see
- * `Status` below. If a claim can't be traced to the CV or a public repo,
- * it does not belong here.
+ * RULE: nothing here is aspirational unless `status` says so. Shipped work and
+ * roadmap work never share a visual language. If a claim can't be traced to a
+ * public repo, a release, or the eval harness, it does not belong here.
+ *
+ * Numbers in the Bolo entry come from its README's measured-accuracy table
+ * (41-clip personal test set), not from estimates.
  */
 
 export const PERSON = {
@@ -21,16 +23,20 @@ export const PERSON = {
     linkedin: 'https://linkedin.com/in/dilip-kumar-aiml/',
     huggingface: 'https://huggingface.co/dilipsroy-22',
   },
-  /** From the CV summary — kept verbatim in substance. */
+  resume: {
+    pdf: '/Dilip-Kumar-Resume.pdf',
+    docx: '/Dilip-Kumar-Resume.docx',
+    page: '/resume',
+  },
+  portrait: '/portrait.jpg',
   summary:
-    'B.Tech (CSE — AI & ML) engineer who ships AI systems end-to-end — from on-device speech models in Rust to a multi-agent AI platform with its own React dashboard. Focused on the training side of AI: curating high-quality datasets, fine-tuning 70B-class open models and pre-training a custom ~200M-parameter language model from scratch.',
-  /** The line the whole site is built around — from the spoken CV. */
+    'Second-year B.Tech student who ships AI systems end to end. I wrote an offline voice-typing app for Windows in Rust that runs Whisper on your own machine, and a multi-agent platform in Python with a React dashboard on top of it. What I actually care about is the training side: building the datasets, running the fine-tunes, and pre-training a small language model from scratch so I understand what everyone else is importing.',
   thesis: 'If I have a problem and can’t find the right tool, I try to build it.',
   philosophy: 'Ship, learn, measure, iterate. Quality over hype. Impact over impression.',
 } as const;
 
 export const EDUCATION = {
-  degree: 'B.Tech — Computer Science & Engineering (AI & ML)',
+  degree: 'B.Tech, Computer Science & Engineering (AI & ML)',
   school: 'Lovely Professional University',
   place: 'Punjab, India',
   span: '2025 – 2029',
@@ -38,7 +44,6 @@ export const EDUCATION = {
   year: 'Second year',
 } as const;
 
-/** Shipped = it exists and runs. Roadmap = a dated target, not a claim. */
 export type Status = 'public' | 'beta' | 'private' | 'roadmap';
 
 export type Project = {
@@ -50,19 +55,16 @@ export type Project = {
   statusLabel: string;
   year: string;
   stack: string[];
-  /** One-sentence pitch — what it is. */
   summary: string;
-  /** The interesting engineering problem. */
   problem: string;
-  /** How it was actually solved. */
   approach: string[];
-  /** Only facts. No invented metrics. */
   facts: { label: string; value: string }[];
+  /** Real screenshot of the running thing. Never a mockup. */
+  shot?: { src: string; alt: string };
   repo?: string;
   live?: string;
-  /** Position in the 3D latent-space constellation (x, y, z). */
+  download?: string;
   pos: [number, number, number];
-  /** Semantic neighbours — drawn as edges in the constellation. */
   near: string[];
   accent: 'amber' | 'cyan' | 'ice';
 };
@@ -73,48 +75,86 @@ export const PROJECTS: Project[] = [
     index: '01',
     name: 'Bolo',
     tagline: 'Offline voice typing for Windows',
-    status: 'beta',
-    statusLabel: 'Beta · Open source',
+    status: 'public',
+    statusLabel: 'Shipped · v0.10 · MIT',
     year: '2026',
-    stack: ['Rust', 'whisper.cpp', 'Windows'],
+    stack: ['Rust', 'Tauri 2', 'whisper.cpp'],
     summary:
-      'Local-first dictation — an offline Wispr Flow. Push-to-talk, 100% on-device Whisper inference. No cloud. No audio ever leaves the machine.',
+      'Hold Ctrl+Alt, speak, release. Clean text lands wherever your cursor is. The whole speech pipeline runs on your machine, so your voice never reaches a server. Ten public releases so far, and a 3 MB installer.',
     problem:
-      'Every good dictation tool streams your voice to someone else’s server. I wanted to know whether a Whisper-class model could run fast enough on an ordinary Windows laptop that you would not miss the cloud — and whether the latency could be hidden well enough to feel instant.',
+      'Cloud dictation costs about $10 a month and uploads everything you say. I wanted to find out whether a Whisper-class model could run fast enough on an ordinary Windows laptop that you would not miss the cloud version. And whether Hinglish, which almost nothing handles properly, could work offline too.',
     approach: [
-      'Wrote the whole pipeline in Rust for predictable latency and no GC pauses mid-utterance.',
-      'Ran Whisper inference on-device through whisper.cpp — the audio buffer never leaves the process.',
-      'Built a mic pre-roll ring buffer so the first syllable is never clipped: the mic is already warm and recording before the hotkey registers.',
-      'Added auto-gain so quiet and loud speakers land in the same usable range without manual tuning.',
+      'Wrote it in Rust on Tauri 2, with whisper.cpp running in-process. No server, no subprocess, no GC pause landing in the middle of a sentence.',
+      'Kept a warm mic ring buffer with pre-roll and auto-gain, so the first syllable is already recorded before the hotkey registers.',
+      'Added a personal dictionary that biases recognition toward your own names and jargon. Measured on a 41-clip test set of my own voice, it cut word error rate from 13.2% to 9.6%.',
+      'Built an evaluation harness first and gated every release on it. A model or feature ships only when the numbers justify it.',
+      'Made the cloud engine strictly optional and off by default. If you turn it on it uses your own API key, stored in Windows Credential Manager, and falls back to local the moment the network fails.',
     ],
     facts: [
-      { label: 'Audio sent to cloud', value: 'None' },
-      { label: 'Inference', value: 'On-device' },
-      { label: 'Language', value: 'Rust' },
-      { label: 'Licence', value: 'MIT' },
+      { label: 'Word error rate', value: '5.0% clean EN' },
+      { label: 'Time to text', value: '~1.9 s (p50, CPU)' },
+      { label: 'Public releases', value: '10' },
+      { label: 'Installer', value: '3 MB' },
     ],
     repo: 'https://github.com/Dilip-kumar-22/bolo',
+    download: 'https://github.com/Dilip-kumar-22/bolo/releases/latest',
     pos: [-4.2, 1.1, -1.4],
     near: ['friday'],
     accent: 'amber',
   },
   {
-    slug: 's-corp',
+    slug: 'typing-master',
     index: '02',
+    name: 'Typing Master',
+    tagline: 'Touch-typing tutor, installable and offline',
+    status: 'public',
+    statusLabel: 'Live · v2.1 · MIT',
+    year: '2025',
+    stack: ['TypeScript', 'Preact', 'PWA'],
+    summary:
+      'A free typing tutor with a 41-chapter curriculum, an adaptive engine that drills the keys you keep missing, a colour-coded finger guide and a 3D keyboard heatmap. Installs like an app, works with no connection, and keeps every keystroke on your device.',
+    problem:
+      'I wanted a typing tutor that adapted to my actual mistakes instead of feeding me random word lists, and I could not find one that was free, worked offline, and was not covered in ads. So I built the one I wanted to use.',
+    approach: [
+      'Structured a real 41-chapter curriculum that unlocks in sequence, gated at 85% accuracy, instead of throwing random words at you.',
+      'Built an adaptive engine that weights drills toward the keys you actually fail.',
+      'Colour-coded every key by the finger that owns it, and drew a 3D heatmap so error patterns are visible instead of buried in a stats table.',
+      'Added multiplayer races, timed challenges and a custom text picker, because practice you enjoy is practice you repeat.',
+      'Made it offline-first and installable, with all progress stored on-device and no account required.',
+    ],
+    facts: [
+      { label: 'Curriculum', value: '41 chapters' },
+      { label: 'Pass threshold', value: '85% accuracy' },
+      { label: 'Works offline', value: 'Yes' },
+      { label: 'Account needed', value: 'No' },
+    ],
+    shot: {
+      src: '/shots/typing-master.jpg',
+      alt: 'Typing Master running: curriculum progress, a best-WPM dial, and the chapter list with lessons unlocking in sequence',
+    },
+    repo: 'https://github.com/Dilip-kumar-22/typing-master-scorp',
+    live: 'https://dilip-kumar-22.github.io/typing-master-scorp/',
+    pos: [-2.4, -2.3, 1.6],
+    near: ['orbit'],
+    accent: 'ice',
+  },
+  {
+    slug: 's-corp',
+    index: '03',
     name: 'S-CORP',
-    tagline: 'Sovereign AI Corporation',
+    tagline: 'A multi-agent platform shaped like a company',
     status: 'private',
     statusLabel: 'Private beta',
     year: '2026',
     stack: ['Python', 'React 19', 'TypeScript'],
     summary:
-      'A fully AI-based platform structured as an autonomous company: an orchestrated multi-agent workforce on a Python backend, driven from a React 19 command dashboard.',
+      'An AI platform structured the way a company is: agents hold roles, hand work to each other, and answer for it. A Python backend runs the workforce and a React 19 dashboard lets you watch it operate.',
     problem:
-      'A single agent with a long tool list degrades as the task grows. The interesting question is organisational, not architectural: if you give agents roles, hand-offs and a chain of accountability the way a company does, does the work hold together at a scale one agent cannot reach?',
+      'One agent with a long tool list gets worse as the task gets bigger. I think the interesting question there is organisational rather than architectural. If you give agents roles, hand-offs and a chain of accountability, does the work hold together at a size a single agent cannot reach?',
     approach: [
-      'Modelled the system as a company — agents hold roles and responsibilities rather than sharing one undifferentiated prompt.',
-      'Split it into a three-repo monorepo (core / backend / frontend) so the orchestration layer can evolve without dragging the UI with it.',
-      'Built a React 19 command dashboard — an operator needs to see what the workforce is doing, not just read the output.',
+      'Modelled the system as a company. Agents hold defined roles instead of sharing one undifferentiated prompt.',
+      'Split it into a three-repo monorepo (core, backend, frontend) so orchestration can change without dragging the UI along with it.',
+      'Built a React 19 command dashboard, because an operator needs to see what the workforce is doing, not just read whatever it produced.',
     ],
     facts: [
       { label: 'Architecture', value: 'Multi-agent' },
@@ -127,52 +167,58 @@ export const PROJECTS: Project[] = [
     accent: 'cyan',
   },
   {
-    slug: 'typing-master',
-    index: '03',
-    name: 'Typing Master',
-    tagline: 'Touch-typing tutor PWA',
+    slug: 'orbit',
+    index: '04',
+    name: 'ORBIT',
+    tagline: '3D scrollytelling starter, given away',
     status: 'public',
-    statusLabel: 'Public · Installable',
-    year: '2025',
-    stack: ['TypeScript', 'Preact', 'PWA'],
+    statusLabel: 'Live · Open source · MIT',
+    year: '2026',
+    stack: ['Three.js', 'GLSL', 'OKLCH'],
     summary:
-      'An installable, offline-first typing tutor: a 41-chapter curriculum, an adaptive practice engine, a visual finger guide and a 3D keyboard heatmap. Every keystroke stays on your device.',
+      'A free starter for cinematic 3D websites. Curl-noise core, particle galaxy, scroll-eased camera, and the parts people usually skip: HDR-safe post-processing, a reduced-motion path and a no-WebGL fallback. Fork it, edit one file, deploy.',
     problem:
-      'I wanted a typing tutor that actually adapted to the keys I kept missing, and I could not find one that was free, offline and not covered in ads. So I built the one I wanted to use.',
+      'Cinematic 3D sites get rebuilt from scratch every time, and the genuinely hard decisions get skipped in the rush. Bloom that blows the highlights out, banding in the post chain, no reduced-motion path. I wanted those decisions made once, correctly, and handed to anyone who wants them.',
     approach: [
-      'Structured a 41-chapter curriculum instead of dumping random word lists on the user.',
-      'Built an adaptive practice engine that weights drills toward the keys you actually fail.',
-      'Rendered a 3D keyboard heatmap so error patterns are visible at a glance rather than buried in a stats table.',
-      'Made it offline-first and installable — all progress persisted on-device, no account required.',
+      'Shipped an HDR-safe composer: a HalfFloat render target with 4× MSAA, so bloom neither bands nor aliases.',
+      'Ordered the post-processing deliberately. The colour grade runs after OutputPass, in display space, where grading maths actually behaves.',
+      'Kept bloom honest at threshold 0.92 with low strength, so only true highlights bloom instead of the whole frame washing white.',
+      'Authored the palette in OKLCH and converted to linear sRGB at load, so the CSS and the WebGL scene share one perceptual palette.',
+      'Built the prefers-reduced-motion path and the no-WebGL fallback in from the start rather than bolting them on at the end.',
     ],
     facts: [
-      { label: 'Curriculum', value: '41 chapters' },
-      { label: 'Works offline', value: 'Yes' },
-      { label: 'Data leaves device', value: 'No' },
       { label: 'Licence', value: 'MIT' },
+      { label: 'Build step', value: 'None' },
+      { label: 'Reduced-motion', value: 'Built in' },
+      { label: 'Powers', value: 'This site' },
     ],
-    repo: 'https://github.com/Dilip-kumar-22/typing-master-scorp',
-    pos: [-2.4, -2.3, 1.6],
-    near: ['orbit'],
+    shot: {
+      src: '/shots/orbit.jpg',
+      alt: 'The ORBIT starter running: a soft iridescent noise core drifting in a dark particle field',
+    },
+    repo: 'https://github.com/Dilip-kumar-22/orbit',
+    live: 'https://dilip-kumar-22.github.io/orbit/',
+    pos: [4.4, -2.0, 0.9],
+    near: ['typing-master', 'shanghai'],
     accent: 'ice',
   },
   {
     slug: 'friday',
-    index: '04',
+    index: '05',
     name: 'FRIDAY',
-    tagline: 'Personal AI assistant',
+    tagline: 'Terminal-native assistant, 13 sub-agents',
     status: 'private',
     statusLabel: 'Private',
     year: '2025',
     stack: ['Python', 'Gemini'],
     summary:
-      'A terminal-native assistant built on 13 specialised sub-agents and a three-tier memory architecture.',
+      'An assistant that lives in the terminal, built from 13 specialised sub-agents sitting on a three-tier memory architecture.',
     problem:
-      'General assistants forget, and one prompt cannot be good at thirteen different jobs. The design question was how to split responsibility across sub-agents while keeping a single coherent memory behind them.',
+      'General assistants forget, and one prompt cannot be good at thirteen different jobs. The design question was how to split responsibility across sub-agents while keeping one coherent memory behind all of them.',
     approach: [
       'Split the work across 13 specialised sub-agents rather than one generalist prompt.',
-      'Built memory in three tiers so recent context, working state and durable facts are not competing for the same window.',
-      'Kept it terminal-native — the assistant lives where the work already happens.',
+      'Built memory in three tiers, so recent context, working state and durable facts stop competing for the same window.',
+      'Kept it terminal-native, because that is where the work already happens.',
     ],
     facts: [
       { label: 'Sub-agents', value: '13' },
@@ -185,39 +231,42 @@ export const PROJECTS: Project[] = [
     accent: 'cyan',
   },
   {
-    slug: 'orbit',
-    index: '05',
-    name: 'ORBIT',
-    tagline: '3D scrollytelling starter',
+    slug: 'shanghai',
+    index: '06',
+    name: '48 Hours in Shanghai',
+    tagline: 'A cinematic scroll, zero build step',
     status: 'public',
-    statusLabel: 'Public · Open source',
+    statusLabel: 'Live · Open source',
     year: '2026',
-    stack: ['Three.js', 'GLSL', 'OKLCH'],
+    stack: ['CSS', 'Vanilla JS', 'AI imagery'],
     summary:
-      'A free, open-source 3D scrollytelling website starter — curl-noise core, particle galaxy, scroll-eased camera, reduced-motion and no-WebGL fallbacks built in. Fork it, edit one file, deploy.',
+      'A six-chapter immersive scroll through the Bund, Pudong and the lantern-lit alleys. No framework, no build step, no bundler. Written to find out how far plain CSS and a scroll listener can be pushed before you actually need a library.',
     problem:
-      'Cinematic 3D sites are mostly rebuilt from scratch every time, and the parts that are genuinely hard — HDR-safe post-processing, bloom that does not blow out, a reduced-motion path — get skipped. I wanted those decisions made once, correctly, and given away.',
+      'Every immersive site seems to arrive with a megabyte of JavaScript attached. I wanted to test the opposite: how cinematic can a page feel with no framework and no build step at all?',
     approach: [
-      'Shipped an HDR-safe composer: a HalfFloat render target with 4× MSAA, so bloom does not band or alias.',
-      'Ordered post-processing deliberately — the colour grade runs after OutputPass, in display space, where grading maths actually behaves.',
-      'Kept bloom honest: threshold 0.92 and low strength, so only true highlights bloom instead of the whole frame washing out.',
-      'Authored the palette in OKLCH and converted to linear sRGB at load, so the CSS and the WebGL scene share one perceptual palette.',
-      'Built in a full prefers-reduced-motion path and a no-WebGL fallback rather than bolting them on.',
+      'Built the whole thing as plain HTML, CSS and a scroll listener. No bundler, no dependencies, nothing to install.',
+      'Cache-warmed every scene image right after the hero paints, so a fast scroll never outruns the loader into a black frame.',
+      'Generated the imagery with AI at full-bleed resolution, then re-encoded it for the web. The site is upfront that the photographs are synthetic.',
     ],
     facts: [
-      { label: 'Licence', value: 'MIT' },
+      { label: 'Chapters', value: '6' },
       { label: 'Build step', value: 'None' },
-      { label: 'Reduced-motion', value: 'Built in' },
-      { label: 'Powers', value: 'This site' },
+      { label: 'Dependencies', value: 'Zero' },
+      { label: 'Imagery', value: 'AI-generated' },
     ],
-    repo: 'https://github.com/Dilip-kumar-22/orbit',
-    pos: [4.4, -2.0, 0.9],
-    near: ['typing-master'],
-    accent: 'ice',
+    shot: {
+      src: '/shots/shanghai-48h.jpg',
+      alt: 'The 48 Hours in Shanghai opening chapter: the Pudong skyline at dusk under a full-bleed title',
+    },
+    repo: 'https://github.com/Dilip-kumar-22/shanghai-48h',
+    live: 'https://dilip-kumar-22.github.io/shanghai-48h/',
+    pos: [0.4, 2.6, 1.2],
+    near: ['orbit'],
+    accent: 'amber',
   },
 ];
 
-/** Dated targets. Rendered in a deliberately different, dimmer language. */
+/** Dated targets. Rendered in a deliberately dimmer, dashed language. */
 export const ROADMAP = [
   {
     name: 'Custom Transformer from scratch',
@@ -229,7 +278,7 @@ export const ROADMAP = [
     name: 'Digital Truth Engine',
     when: '2028',
     detail:
-      'A deepfake-detection API: a PyTorch computer-vision model served over FastAPI with a live “fake score” demo.',
+      'A deepfake-detection API. A PyTorch computer-vision model served over FastAPI with a live “fake score” demo.',
   },
   {
     name: 'Sentinel Shield',
@@ -239,27 +288,26 @@ export const ROADMAP = [
   },
 ] as const;
 
-/** The research track — this is the actual long-term direction. */
 export const RESEARCH = {
   heading: 'The training side',
-  body: 'Most people using large models treat them as a black box. My ambition is to work with much larger models eventually — so I am starting at the bottom, where the foundations are, rather than at the API.',
+  body: 'Most people using large models treat them as a black box. I want to work with much bigger models eventually, so I am starting at the bottom where the foundations are, instead of starting at the API.',
   tracks: [
     {
       k: 'Pre-training',
       title: 'A ~200M-parameter language model, from scratch',
-      body: 'Tokenizer, training loop, evaluation — the whole pipeline, built rather than imported. Small enough to actually finish and understand; large enough that every mistake shows up in the loss.',
+      body: 'Tokenizer, training loop, evaluation. The whole pipeline built rather than imported. Small enough that I can actually finish it, big enough that every mistake shows up in the loss curve.',
       state: 'In progress',
     },
     {
       k: 'Fine-tuning',
       title: '70B-class open models with QLoRA',
-      body: 'Quantised low-rank adaptation on curated domain data — where the compute limits are real and the technique has to carry the result.',
+      body: 'Quantised low-rank adaptation on curated domain data, where the compute limits are real and the technique has to carry the result.',
       state: 'Experimented',
     },
     {
       k: 'Data',
-      title: 'Dataset curation and cleaning',
-      body: 'Deduplication, filtering, and eval-first pipeline design. The unglamorous half that decides whether the training run was worth the electricity.',
+      title: 'Dataset curation and evaluation',
+      body: 'Deduplication, filtering, and designing the eval before the model. This is the unglamorous half that decides whether the training run was worth the electricity. Bolo is the proof it works: its eval harness is what turned 13.2% word error into 9.6%.',
       state: 'Ongoing',
     },
   ],
@@ -270,12 +318,12 @@ export const SKILLS = [
   { group: 'Languages', items: ['Python', 'Rust', 'TypeScript', 'C/C++', 'SQL'] },
   { group: 'ML / Deep learning', items: ['PyTorch', 'TensorFlow', 'scikit-learn', 'NumPy', 'Pandas', 'OpenCV'] },
   { group: 'GenAI / LLMs', items: ['Transformers', 'Hugging Face', 'LangChain / LangGraph', 'RAG + vector DBs', 'QLoRA', 'Whisper (on-device)'] },
-  { group: 'Data & training', items: ['Dataset curation', 'Tokenizers', 'LLM evals', 'Synthetic data'] },
-  { group: 'MLOps / Cloud', items: ['Docker', 'FastAPI', 'AWS', 'Linux', 'Git', 'CI/CD'] },
+  { group: 'Data & training', items: ['Dataset curation', 'Tokenizers', 'Eval harnesses', 'Synthetic data'] },
+  { group: 'Frameworks & cloud', items: ['React 19', 'Tauri 2', 'Docker', 'FastAPI', 'AWS', 'Linux', 'CI/CD'] },
   { group: 'Security', items: ['Kali Linux', 'Burp Suite', 'OWASP Top 10', 'TryHackMe'] },
 ] as const;
 
-/** Every one of these is unearned so far. Labelled as such, deliberately. */
+/** Unearned so far, and labelled that way on purpose. */
 export const CERTIFICATIONS = [
   { name: 'AWS Cloud Practitioner', state: 'In progress', when: '2026' },
   { name: 'TryHackMe Jr Penetration Tester', state: 'Target', when: '2026' },
@@ -284,7 +332,6 @@ export const CERTIFICATIONS = [
   { name: 'AWS Machine Learning Specialty', state: 'Target', when: '2028' },
 ] as const;
 
-/** Scroll chapters — the training run. Each is one "epoch". */
 export const CHAPTERS = [
   { id: 'boot', label: 'Boot', epoch: '00' },
   { id: 'identity', label: 'Identity', epoch: '01' },

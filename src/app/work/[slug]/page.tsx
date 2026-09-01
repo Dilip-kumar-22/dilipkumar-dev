@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { PROJECTS, projectBySlug } from '@/lib/content';
@@ -6,6 +7,7 @@ import Stage from '@/components/three/Stage';
 import ScrollProvider from '@/components/ScrollProvider';
 import DenoiseText from '@/components/DenoiseText';
 import Scrim from '@/components/Scrim';
+import ResumeButton from '@/components/hud/ResumeButton';
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
@@ -42,6 +44,7 @@ export default async function CaseStudy({
     <ScrollProvider>
       <Stage />
       <Scrim />
+      <ResumeButton />
 
       <main className="relative z-10 shell py-24">
         <div className="mx-auto max-w-5xl">
@@ -72,6 +75,26 @@ export default async function CaseStudy({
           <div className="rule my-14" />
 
           <p className="reveal t-body !max-w-[62ch] text-lg text-hi/90">{p.summary}</p>
+
+          {/* A real screenshot of the running thing, captured from the live
+              deployment. Projects without one say so rather than showing a mockup. */}
+          {p.shot && (
+            <figure className="reveal reveal-1 mt-14">
+              <div className="overflow-hidden border border-line-soft">
+                <Image
+                  src={p.shot.src}
+                  alt={p.shot.alt}
+                  width={1600}
+                  height={1000}
+                  className="h-auto w-full"
+                  sizes="(max-width: 900px) 100vw, 900px"
+                />
+              </div>
+              <figcaption className="t-data mt-3 text-[0.68rem] text-low">
+                {p.live ? `Captured from ${p.live.replace(/^https?:\/\//, '')}` : 'Captured from the running build'}
+              </figcaption>
+            </figure>
+          )}
 
           {/* facts — only real ones */}
           <dl className="reveal reveal-1 mt-16 grid gap-px border border-line-soft bg-line-soft sm:grid-cols-2 lg:grid-cols-4">

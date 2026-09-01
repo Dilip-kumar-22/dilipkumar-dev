@@ -4,6 +4,7 @@ import Scrim from '@/components/Scrim';
 import Preloader from '@/components/Preloader';
 import LossCurve from '@/components/hud/LossCurve';
 import Nav from '@/components/hud/Nav';
+import ResumeButton from '@/components/hud/ResumeButton';
 
 import Hero from '@/components/sections/Hero';
 import Identity from '@/components/sections/Identity';
@@ -23,6 +24,7 @@ export default function Home() {
       <Scrim />
       <LossCurve />
       <Nav />
+      <ResumeButton />
 
       <main className="relative z-10">
         <Hero />

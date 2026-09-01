@@ -1,0 +1,306 @@
+/* ============================================================
+   Résumé — a real document, not a dark 3D page.
+
+   Deliberately warm off-white paper, one accent, an asymmetric
+   two-column skills block and a single narrow measure. Print
+   rules are first-class: this file is what generates the PDF.
+   ============================================================ */
+
+:root {
+  --cv-paper: #fbfaf7;
+  --cv-ink: #16181d;
+  --cv-mid: #40454f;
+  --cv-soft: #6b7280;
+  --cv-rule: #ddd8cf;
+  --cv-accent: #b26a12;
+}
+
+/* the site is dark; this route is a document, so it opts out */
+html:has(.cv) {
+  background: var(--cv-paper);
+}
+
+.cv,
+.cv-bar {
+  color-scheme: light;
+}
+
+/* ---------- screen-only toolbar ---------- */
+.cv-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: #f2efe9;
+  border-bottom: 1px solid var(--cv-rule);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cv-bar a {
+  color: var(--cv-mid);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.cv-bar a:hover {
+  color: var(--cv-accent);
+  border-bottom-color: var(--cv-accent);
+}
+.cv-bar__actions {
+  display: flex;
+  gap: 1.25rem;
+}
+
+/* ---------- the sheet ---------- */
+.cv {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+  background: var(--cv-paper);
+  color: var(--cv-mid);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 10.6pt;
+  line-height: 1.5;
+}
+
+.cv-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 2px solid var(--cv-ink);
+}
+.cv-head h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.9rem;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--cv-ink);
+  margin: 0;
+}
+.cv-head__role {
+  margin: 0.45rem 0 0.7rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+}
+.cv-head__role span {
+  color: var(--cv-soft);
+}
+
+.cv-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 9.2pt;
+  color: var(--cv-soft);
+}
+.cv-contact a {
+  color: var(--cv-mid);
+  text-decoration: none;
+  border-bottom: 1px solid var(--cv-rule);
+}
+
+.cv-portrait {
+  flex: 0 0 auto;
+  width: 104px;
+  height: 104px;
+  object-fit: cover;
+  border-radius: 2px;
+  filter: grayscale(0.15) contrast(1.02);
+}
+
+/* ---------- sections ---------- */
+.cv-sec {
+  margin-top: 1.6rem;
+  break-inside: avoid;
+}
+.cv-sec > h2 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+}
+.cv-summary {
+  margin: 0;
+  max-width: 68ch;
+  color: var(--cv-mid);
+}
+
+/* skills: label rail + values, not a pill soup */
+.cv-skills {
+  margin: 0;
+  display: grid;
+  gap: 0.28rem;
+}
+.cv-skills > div {
+  display: grid;
+  grid-template-columns: 10.5rem 1fr;
+  gap: 0.9rem;
+  align-items: baseline;
+}
+.cv-skills dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 8.6pt;
+  letter-spacing: 0.05em;
+  color: var(--cv-soft);
+}
+.cv-skills dd {
+  margin: 0;
+  color: var(--cv-ink);
+}
+
+/* projects */
+.cv-proj {
+  margin-top: 0.85rem;
+  break-inside: avoid;
+}
+.cv-proj__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.15rem 1rem;
+}
+.cv-proj h3 {
+  margin: 0;
+  flex: 1 1 22rem;
+  min-width: 0;              /* without this the title refuses to shrink */
+  font-size: 11.2pt;
+  font-weight: 600;
+  color: var(--cv-ink);
+}
+.cv-proj__tag {
+  font-weight: 400;
+  color: var(--cv-soft);
+}
+.cv-proj__tag::before {
+  content: '· ';
+}
+.cv-proj__meta {
+  flex: 0 1 auto;
+  max-width: 100%;
+  text-align: right;
+  font-family: var(--font-mono), monospace;
+  font-size: 8pt;
+  color: var(--cv-soft);
+}
+.cv-proj__meta em {
+  font-style: normal;
+  color: var(--cv-accent);
+}
+.cv-proj__meta em::before {
+  content: ' · ';
+  color: var(--cv-rule);
+}
+.cv-proj ul {
+  margin: 0.32rem 0 0;
+  padding-left: 1.05rem;
+}
+.cv-proj li {
+  margin-bottom: 0.16rem;
+}
+.cv-proj__link {
+  margin: 0.28rem 0 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 8.2pt;
+  color: var(--cv-soft);
+}
+
+.cv-list {
+  margin: 0;
+  padding-left: 1.05rem;
+}
+.cv-list li {
+  margin-bottom: 0.18rem;
+}
+.cv-list--tight li {
+  margin-bottom: 0.1rem;
+}
+.cv-list em {
+  font-style: normal;
+  color: var(--cv-soft);
+}
+.cv-muted {
+  color: var(--cv-soft);
+  font-size: 9.4pt;
+}
+
+.cv-split {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 2.4rem;
+}
+.cv-edu__deg {
+  margin: 0;
+  font-weight: 600;
+  color: var(--cv-ink);
+}
+.cv-edu__sub {
+  margin: 0.1rem 0 0;
+  color: var(--cv-soft);
+}
+.cv-edu__sub span {
+  color: var(--cv-rule);
+}
+
+@media (max-width: 640px) {
+  .cv { padding: 2rem 1.25rem 3rem; }
+  .cv-head { flex-direction: column-reverse; align-items: flex-start; gap: 1.1rem; }
+  .cv-head h1 { font-size: 2.2rem; }
+  .cv-skills > div { grid-template-columns: 1fr; gap: 0; }
+  .cv-split { grid-template-columns: 1fr; gap: 0; }
+}
+
+/* ---------- print / PDF ---------- */
+/* Margins are supplied by the PDF generator (scripts/make-pdf.mjs), not here.
+   Declaring them in both places applies them twice: the right-hand column
+   walks off the sheet and a one-page CV silently becomes two. */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  .cv-bar { display: none !important; }
+  html, body { background: #fff !important; }
+  .cv {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    font-size: 9.1pt;
+    line-height: 1.38;
+  }
+  .cv-head { padding-bottom: 0.75rem; }
+  .cv-head h1 { font-size: 2.05rem; }
+  .cv-head__role { margin: 0.3rem 0 0.45rem; font-size: 0.64rem; }
+  .cv-contact { font-size: 8.4pt; gap: 0.15rem 0.85rem; }
+  .cv-portrait { width: 88px; height: 88px; }
+  .cv-sec { margin-top: 0.72rem; }
+  .cv-sec > h2 { margin-bottom: 0.3rem; font-size: 0.6rem; }
+  .cv-proj { margin-top: 0.42rem; }
+  .cv-proj h3 { font-size: 10.6pt; }
+  .cv-proj ul { margin-top: 0.16rem; }
+  .cv-proj li { margin-bottom: 0.04rem; }
+  .cv-proj__link { margin-top: 0.12rem; font-size: 7.6pt; }
+  .cv-list li { margin-bottom: 0.05rem; }
+  .cv-skills { gap: 0.12rem; }
+  .cv-summary { max-width: none; }
+  .cv-contact a, .cv-bar a { border-bottom: none; }
+  a { color: inherit; text-decoration: none; }
+}
