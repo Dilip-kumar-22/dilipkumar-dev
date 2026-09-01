@@ -86,6 +86,106 @@ export function textPoints(n: number, text: string, seed = 7): Float32Array {
   return out;
 }
 
+/* ---------- 1b. the portrait, as a volumetric relief ----------------
+   Sampled from the real photo. The subject sits on a white background, so
+   "ink" is INVERTED luminance: near-white pixels are background and get
+   skipped entirely, and the darker a pixel is the brighter and nearer its
+   particle sits. Mapping brightness to raw luminance would light up the
+   backdrop and leave the face as a hole.                                */
+export type PortraitData = { pos: Float32Array; ink: Float32Array };
+
+export function portraitPoints(
+  n: number,
+  src: string,
+  /** World height. The camera shows ~7.9 units at this point in the scroll. */
+  height = 4.1,
+  /** Offset into the open upper-right of the Identity layout, so the relief
+      sits in negative space instead of fighting the body copy. */
+  offset: [number, number] = [3.05, 1.35],
+  seed = 23,
+): Promise<PortraitData> {
+  return new Promise((resolve, reject) => {
+    if (typeof document === 'undefined') return reject(new Error('no dom'));
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onerror = () => reject(new Error('portrait failed to load'));
+    img.onload = () => {
+      const S = 260; // sampling grid; plenty of detail for a point cloud
+      const cv = document.createElement('canvas');
+      cv.width = S;
+      cv.height = S;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return reject(new Error('no 2d context'));
+
+      ctx.drawImage(img, 0, 0, S, S);
+      const d = ctx.getImageData(0, 0, S, S).data;
+
+      // Which pixels belong to him, and how bright each one should be.
+      //
+      // Inclusion uses INVERTED luminance (near-white = the studio backdrop,
+      // so it is dropped). Brightness uses TRUE luminance, because a face is
+      // read tonally: skin is light, hair is dark. Driving brightness from the
+      // inverted value makes hair the brightest object on screen and the whole
+      // thing collapses into a glowing blob with no features.
+      //
+      // The elliptical edge thins by DENSITY rather than by dimming, which is
+      // how a point cloud dissolves convincingly.
+      const px: number[] = [];
+      const py: number[] = [];
+      const pk: number[] = [];
+      const cx = S * 0.5;
+      const cy = S * 0.36; // the face, not the middle of the photo
+      const rx = S * 0.40;
+      const ry = S * 0.46;
+      const edge = mulberry32(seed ^ 0x5f3a);
+
+      for (let y = 0; y < S; y++) {
+        for (let x = 0; x < S; x++) {
+          const i = (y * S + x) * 4;
+          const lum = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+          if (1 - lum < 0.14) continue; // studio backdrop
+
+          const dx = (x - cx) / rx;
+          const dy = (y - cy) / ry;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          if (r > 1) continue;
+          if (r > 0.68) {
+            const keep = 1 - (r - 0.68) / 0.32;
+            if (edge() > keep * keep) continue;
+          }
+
+          // stretch the subject's tonal range across 0..1
+          const tone = Math.min(1, Math.max(0, (lum - 0.06) / 0.74));
+          px.push(x);
+          py.push(y);
+          pk.push(tone);
+        }
+      }
+
+      if (px.length < 32) return reject(new Error('portrait had no subject pixels'));
+
+      const rnd = mulberry32(seed);
+      const pos = new Float32Array(n * 3);
+      const ink = new Float32Array(n);
+      const sc = height / S;
+      const count = px.length;
+
+      for (let i = 0; i < n; i++) {
+        const j = (rnd() * count) | 0;
+        const k = pk[j];
+        pos[i * 3] = (px[j] - S / 2) * sc + (rnd() - 0.5) * sc + offset[0];
+        pos[i * 3 + 1] = -(py[j] - S / 2) * sc + (rnd() - 0.5) * sc + offset[1];
+        // lit areas sit nearer the camera, so the face reads as a raised relief
+        pos[i * 3 + 2] = (k - 0.45) * 1.6 + gauss(rnd) * 0.06;
+        ink[i] = k;
+      }
+      resolve({ pos, ink });
+    };
+    img.src = src;
+  });
+}
+
 /* ---------- 2. swiss roll — the canonical manifold ------------------ */
 export function swissRoll(n: number, seed = 3): Float32Array {
   const rnd = mulberry32(seed);

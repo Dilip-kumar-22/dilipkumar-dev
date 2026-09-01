@@ -25,7 +25,7 @@ const BULLETS: Record<string, string[]> = {
   ],
   'typing-master': [
     'Shipped an installable, offline-first typing tutor: 41-chapter curriculum, adaptive drills weighted to the keys the user fails, colour-coded finger guide and a 3D keyboard heatmap.',
-    'Kept all progress on-device with no account, and added multiplayer races and timed challenges.',
+    'Kept all progress on-device with no account, added daily challenges and code-typing drills, and covered it with 137 passing tests.',
   ],
   's-corp': [
     'Architected a multi-agent AI platform where agents hold defined roles and hand work to each other, on a Python backend.',

@@ -44,7 +44,7 @@ export default function Identity() {
         </div>
 
         {/* ---- right: vitals as an instrument readout, not a card ---- */}
-        <div className="lg:pt-64">
+        <div className="lg:pt-[26rem]">
           <div className="reveal reveal-2 border-t border-line">
             {VITALS.map(([k, v, suffix], i) => (
               <div

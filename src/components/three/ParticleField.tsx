@@ -13,6 +13,7 @@ import {
   swissRoll,
   constellation,
   convergedRing,
+  portraitPoints,
   randoms,
 } from './targets';
 
@@ -22,10 +23,19 @@ import {
  * you are on Identity, the constellation while you are on Work. Measured at
  * runtime because section heights depend on viewport and text wrapping.
  */
-const ANCHORS = ['boot', 'identity', 'signal', 'work', 'convergence'] as const;
+const ANCHORS = ['boot', 'identity', 'thesis', 'signal', 'work', 'convergence'] as const;
+
+/**
+ * Scroll order -> attribute index. The attributes are numbered by when they
+ * were added (aP5 is the portrait, added last), NOT by when they appear, so
+ * this table is the only place the two orderings meet.
+ *   boot noise(0) · identity portrait(5) · thesis name(1)
+ *   signal manifold(2) · work constellation(3) · convergence ring(4)
+ */
+const SEQUENCE = [0, 5, 1, 2, 3, 4] as const;
 
 /** Fallback for routes without those sections (e.g. case studies). */
-const DEFAULT_STOPS = [0.0, 0.17, 0.4, 0.66, 0.93];
+const DEFAULT_STOPS = [0.0, 0.14, 0.3, 0.48, 0.7, 0.93];
 
 function measureStops(): number[] {
   if (typeof document === 'undefined') return [...DEFAULT_STOPS];
@@ -60,8 +70,8 @@ function weights(p: number, stops: number[], out: number[]) {
     out[0] = 1;
     return out;
   }
-  if (p >= stops[4]) {
-    out[4] = 1;
+  if (p >= stops[stops.length - 1]) {
+    out[stops.length - 1] = 1;
     return out;
   }
 
@@ -85,7 +95,7 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
   const { size } = useThree();
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const groupRef = useRef<THREE.Points>(null);
-  const w = useRef([1, 0, 0, 0, 0]);
+  const w = useRef([1, 0, 0, 0, 0, 0]);
   const pointer = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const ndc = useRef(new THREE.Vector2(0, 0));
   const active = useRef(0);
@@ -94,6 +104,7 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
   const ray = useMemo(() => new THREE.Raycaster(), []);
   const hit = useMemo(() => new THREE.Vector3(), []);
   const stops = useRef<number[]>([...DEFAULT_STOPS]);
+
 
   // Anchor the morph to the real section positions, and re-measure whenever
   // the layout can change (resize, font swap, late-mounting content).
@@ -134,12 +145,37 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
     g.setAttribute('aP2', new THREE.BufferAttribute(swissRoll(COUNT), 3));
     g.setAttribute('aP3', new THREE.BufferAttribute(constellation(COUNT), 3));
     g.setAttribute('aP4', new THREE.BufferAttribute(convergedRing(COUNT), 3));
+    // aP5/aInk start as noise and are replaced once the photo decodes, so the
+    // scene never blocks on a network round-trip.
+    g.setAttribute('aP5', new THREE.BufferAttribute(noiseCloud(COUNT, 77), 3));
+    g.setAttribute('aInk', new THREE.BufferAttribute(new Float32Array(COUNT).fill(0.6), 1));
     g.setAttribute('aRand', new THREE.BufferAttribute(randoms(COUNT), 1));
     // The shader ignores `position`, so a computed sphere keeps frustum
     // culling from removing the field when the camera dollies.
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 16);
     return g;
   }, [COUNT]);
+
+  // Load the portrait relief. Async by nature, so the geometry ships with a
+  // placeholder and the real data is swapped in the moment the photo decodes.
+  useEffect(() => {
+    let dead = false;
+    portraitPoints(COUNT, '/portrait.jpg')
+      .then(({ pos, ink }) => {
+        if (dead) return;
+        const g = geometry;
+        (g.getAttribute('aP5') as THREE.BufferAttribute).copyArray(pos);
+        (g.getAttribute('aP5') as THREE.BufferAttribute).needsUpdate = true;
+        (g.getAttribute('aInk') as THREE.BufferAttribute).copyArray(ink);
+        (g.getAttribute('aInk') as THREE.BufferAttribute).needsUpdate = true;
+      })
+      .catch(() => {
+        /* no portrait: the placeholder noise keeps the sequence intact */
+      });
+    return () => {
+      dead = true;
+    };
+  }, [COUNT, geometry]);
 
   const uniforms = useMemo(
     () => ({
@@ -148,6 +184,7 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
       uW2: { value: 0 },
       uW3: { value: 0 },
       uW4: { value: 0 },
+      uW5: { value: 0 },
       uTime: { value: 0 },
       uTurb: { value: 0.9 },
       // Point size is multiplied by (300/-z) in the shader, so at z≈10 this
@@ -196,11 +233,12 @@ export default function ParticleField({ reduced }: { reduced: boolean }) {
     const u = m.uniforms;
 
     weights(p, stops.current, w.current);
-    u.uW0.value = w.current[0];
-    u.uW1.value = w.current[1];
-    u.uW2.value = w.current[2];
-    u.uW3.value = w.current[3];
-    u.uW4.value = w.current[4];
+    // w is indexed by scroll position; the uniforms are indexed by attribute.
+    u.uW0.value = 0; u.uW1.value = 0; u.uW2.value = 0;
+    u.uW3.value = 0; u.uW4.value = 0; u.uW5.value = 0;
+    for (let i = 0; i < SEQUENCE.length; i++) {
+      (u as Record<string, { value: number }>)['uW' + SEQUENCE[i]].value = w.current[i];
+    }
     // how locked-in the current shape is — 1.0 means a target is fully formed
     u.uResolve.value = Math.max(...w.current);
 

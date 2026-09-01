@@ -69,9 +69,11 @@ attribute vec3 aP1;
 attribute vec3 aP2;
 attribute vec3 aP3;
 attribute vec3 aP4;
+attribute vec3 aP5;      // the portrait relief
 attribute float aRand;
+attribute float aInk;    // per-particle tone from the photo
 
-uniform float uW0, uW1, uW2, uW3, uW4;
+uniform float uW0, uW1, uW2, uW3, uW4, uW5;
 uniform float uTime;
 uniform float uTurb;     // turbulence — high while noisy, ~0 once converged
 uniform float uSize;
@@ -87,15 +89,19 @@ varying float vRand;
 varying float vConv;
 varying float vDepth;
 varying float vHot;      // extra brightness from interaction
+varying float vInk;      // photo tone, only meaningful while the portrait is up
+varying float vPortrait; // how much of the portrait target is currently blended
 
 ${SIMPLEX}
 
 void main(){
   vRand = aRand;
   vConv = uConverge;
+  vInk = aInk;
+  vPortrait = uW5;
 
   // one weighted sum — no branching, no buffer re-uploads
-  vec3 p = aP0 * uW0 + aP1 * uW1 + aP2 * uW2 + aP3 * uW3 + aP4 * uW4;
+  vec3 p = aP0 * uW0 + aP1 * uW1 + aP2 * uW2 + aP3 * uW3 + aP4 * uW4 + aP5 * uW5;
 
   // Fluid drift. Amplitude falls as the run converges, so early scroll feels
   // unstable and the end feels settled.
@@ -130,6 +136,8 @@ void main(){
   // uSize is a SCALE, not pixels — the (300/-z) term multiplies it ~30×.
   // Keep it small (~0.08) so points land at 2–4px. See LESSONS [3D].
   float ps = uSize * uDpr * (300.0 / max(0.001, -mv.z)) * (0.55 + aRand * 0.8) * (1.0 + vHot * 0.9);
+  // while the portrait is formed, size tracks tone so the relief has form
+  ps *= mix(1.0, 0.55 + aInk * 1.35, vPortrait);
   // Clamp: without this, particles that drift near the camera balloon into
   // huge soft blobs that read as dirt on the lens and wreck text legibility.
   gl_PointSize = clamp(ps, 0.6, 7.0);
@@ -150,6 +158,8 @@ varying float vRand;
 varying float vConv;
 varying float vDepth;
 varying float vHot;
+varying float vInk;
+varying float vPortrait;
 
 void main(){
   // round, soft point
@@ -165,6 +175,10 @@ void main(){
 
   // touched particles run hot toward the signal colour
   col = mix(col, uWarm, clamp(vHot * 0.7, 0.0, 1.0));
+
+  // The portrait stays cool and silver. Tinting a face with the accent colour
+  // makes it read as decoration; leaving it neutral makes it read as a person.
+  col = mix(col, vec3(0.86, 0.89, 0.94), vPortrait * 0.75);
 
   float tw = 0.68 + 0.32 * sin(uTime * 1.5 + vRand * 42.0);
   float fade = smoothstep(30.0, 4.0, vDepth);   // depth cue
@@ -183,7 +197,11 @@ void main(){
   // A locked shape packs every particle into a fraction of the screen, and
   // additive blending stacks them — that is what blows the highlights, not
   // the brightness of any single point. Thin the alpha as density rises.
+  // The portrait is a tonal image, so its particles must carry tone.
+  lum *= mix(1.0, 0.06 + vInk * vInk * 3.60, vPortrait);
+
   float alpha = a * uOpacity * fade * (1.0 - lock * 0.34);
+  alpha *= mix(1.0, 0.30 + vInk * 1.05, vPortrait);
 
   gl_FragColor = vec4(col * lum, alpha);
 }
