@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dilipkumar.dev — NOISE → SIGNAL
 
-## Getting Started
+My portfolio. **[dilipkumar-dev.vercel.app](https://dilipkumar-dev.vercel.app)**
 
-First, run the development server:
+The whole site is one continuous training run. A particle field morphs through
+targets anchored to real sections — gaussian noise, my portrait rebuilt as a
+volumetric point cloud, my name, a swiss-roll manifold, my projects as clusters
+in latent space, and finally a converged ring. The scroll indicator is a
+descending loss curve with a live step/loss readout. The palette does the
+narrative work: cold graphite is noise, sodium amber is signal, so the page
+warms as the run converges.
+
+It opens on a player card you can spin and flick. The rating is my CGPA, and
+every statistic printed on it is a real measurement taken from the projects
+below.
+
+## The rule this site is built on
+
+`src/lib/content.ts` is the only source of facts, and the résumé page is
+generated from it, so the site and the CV cannot disagree. Shipped work and
+roadmap work never share a visual language — dated targets are rendered dimmer
+and dashed and labelled "not built yet". Every number traces to a public
+repository, a release, or an evaluation harness.
+
+## Stack
+
+Next.js · React · TypeScript · Tailwind · React Three Fiber · custom GLSL ·
+GSAP · Lenis. The 3D descends from [ORBIT](https://github.com/Dilip-kumar-22/orbit),
+an open-source scrollytelling starter I wrote and gave away.
+
+## Running it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verifying it
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Screenshots are not evidence on their own, so there is a harness:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build && npx next start -p 3001
+node scripts/verify.mjs --url http://localhost:3001 --out .verify
+```
 
-## Learn More
+It reports measured fps, console errors, reveal state, canvas size and a
+blown-highlight check, and captures every section at 360 / 768 / 1440.
+The gate: 0 console errors, blown highlights under 1.5%, 60fps at 1440.
+A blank-page control below 100fps means the run is polluted — discard it.
 
-To learn more about Next.js, take a look at the following resources:
+`node scripts/make-pdf.mjs` regenerates the résumé PDF from the `/resume`
+route. `PROJECT_MAP.md` documents how the files connect and the constraints
+that will break the site if ignored.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Licence
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT for the code. The photographs, CV and written content are mine.

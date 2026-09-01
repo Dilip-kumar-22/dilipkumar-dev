@@ -63,3 +63,9 @@ submission/
 *PEL132*
 presentation-script.md
 comic-strip.html
+
+# source CV kept locally; the served copy lives in public/
+Dilip_Kumar_Resume.docx
+
+# verification artefacts
+.verify/
