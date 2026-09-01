@@ -46,6 +46,17 @@ export const EDUCATION = {
 
 export type Status = 'public' | 'beta' | 'private' | 'roadmap';
 
+export type MediaItem = {
+  kind: 'video' | 'image';
+  src: string;
+  webm?: string;
+  poster?: string;
+  alt: string;
+  caption: string;
+  /** Chrome to frame it in, so a capture reads as the product not a stray file. */
+  chrome?: 'window' | 'terminal' | 'browser';
+};
+
 export type Project = {
   slug: string;
   index: string;
@@ -59,8 +70,12 @@ export type Project = {
   problem: string;
   approach: string[];
   facts: { label: string; value: string }[];
-  /** Real screenshot of the running thing. Never a mockup. */
-  shot?: { src: string; alt: string };
+  /**
+   * Captures of the project actually running. The first item is what the Work
+   * section plays as you scroll past; the rest appear in the case study.
+   * Video is muted + looped and only plays while on screen.
+   */
+  media?: MediaItem[];
   repo?: string;
   live?: string;
   download?: string;
@@ -93,8 +108,20 @@ export const PROJECTS: Project[] = [
     facts: [
       { label: 'Word error rate', value: '5.0% clean EN' },
       { label: 'Time to text', value: '~1.9 s (p50, CPU)' },
-      { label: 'Public releases', value: '10' },
-      { label: 'Installer', value: '3 MB' },
+      { label: 'Audio leaving device', value: 'None' },
+      { label: 'Installer', value: '3 MB · 10 releases' },
+    ],
+    media: [
+      {
+        kind: 'video',
+        src: '/media/bolo.mp4',
+        webm: '/media/bolo.webm',
+        poster: '/media/bolo-poster.jpg',
+        chrome: 'window',
+        alt: 'Bolo running on Windows: the Models tab showing Lite, Small EN and Turbo tiers, with Small EN marked "fits this PC" and active',
+        caption:
+          'Bolo picking a model for the machine it is on. Each tier is benchmarked on real voice, downloaded once, then offline forever.',
+      },
     ],
     repo: 'https://github.com/Dilip-kumar-22/bolo',
     download: 'https://github.com/Dilip-kumar-22/bolo/releases/latest',
@@ -130,10 +157,16 @@ export const PROJECTS: Project[] = [
       { label: 'Works offline', value: 'Fully' },
       { label: 'Account needed', value: 'No' },
     ],
-    shot: {
-      src: '/shots/typing-master.jpg',
-      alt: 'Typing Master running: curriculum progress, a best-WPM dial, and the chapter list with lessons unlocking in sequence',
-    },
+    media: [
+      {
+        kind: 'image',
+        src: '/shots/typing-master.jpg',
+        chrome: 'browser',
+        alt: 'Typing Master running: curriculum progress, a best-WPM dial, and the chapter list with lessons unlocking in sequence',
+        caption:
+          'The installed app. Chapters unlock in sequence at 85% accuracy, and every stat stays on the device.',
+      },
+    ],
     repo: 'https://github.com/Dilip-kumar-22/typing-master-scorp',
     live: 'https://dilip-kumar-22.github.io/typing-master-scorp/',
     pos: [-2.4, -2.3, 1.6],
@@ -144,25 +177,42 @@ export const PROJECTS: Project[] = [
     slug: 's-corp',
     index: '03',
     name: 'S-CORP',
-    tagline: 'A multi-agent platform shaped like a company',
+    tagline: 'An AI company that runs itself',
     status: 'private',
-    statusLabel: 'Private beta',
+    statusLabel: 'Private beta · v13',
     year: '2026',
-    stack: ['Python', 'React 19', 'TypeScript'],
+    stack: ['Python', 'React 19', 'TypeScript', 'Docker'],
     summary:
-      'An AI platform structured the way a company is: agents hold roles, hand work to each other, and answer for it. A Python backend runs the workforce and a React 19 dashboard lets you watch it operate.',
+      'A platform shaped like a company rather than a chatbot. SHADOW reads your intent and dispatches it to named specialists — GHOST, FOUNDRY, GENESIS, ARCHIVIST — while SPARK generates, queues and executes work on its own. Everything moves across an Inbox → Planning → Running → Review → Completed board you can actually watch.',
     problem:
-      'One agent with a long tool list gets worse as the task gets bigger. I think the interesting question there is organisational rather than architectural. If you give agents roles, hand-offs and a chain of accountability, does the work hold together at a size a single agent cannot reach?',
+      'One agent holding a long tool list gets worse as the job gets bigger. I think that problem is organisational, not architectural. Give agents real roles, real hand-offs and somewhere the work is visibly accountable, and you can reach a scale a single prompt cannot. The hard part is not the agents. It is the orchestration, the memory, and being able to see what is happening.',
     approach: [
-      'Modelled the system as a company. Agents hold defined roles instead of sharing one undifferentiated prompt.',
-      'Split it into a three-repo monorepo (core, backend, frontend) so orchestration can change without dragging the UI along with it.',
-      'Built a React 19 command dashboard, because an operator needs to see what the workforce is doing, not just read whatever it produced.',
+      'Put one router at the front. SHADOW reads intent and auto-routes to the right specialist instead of making the operator pick.',
+      'Gave every agent a role and a name, so work has an owner: GHOST, FOUNDRY, GENESIS, GROWTH, INQUISITOR, ARCHIVIST.',
+      'Built SPARK, an autonomous engine that generates its own briefs, queues them and executes — the dashboard shows what is queued, running and done.',
+      'Made the whole thing observable: 54 connectors reporting health and latency, a CRON engine running 18 scheduled jobs, 12 autopilot rules, and a live context meter in the status bar.',
+      'Wired 38 models across four providers — Anthropic, Google, OpenAI and xAI — behind one router, each with its own price and role, so the cheap model does the cheap work.',
+      'Ran untrusted work inside Docker sandboxes, and versioned prompts (184 and counting) so a regression can be traced to the change that caused it.',
+      'Put the money on screen. A live meter shows tokens per hour, spend per hour and p50 latency, because an autonomous system you cannot bill is an autonomous system you cannot trust.',
+      'Split it into a three-repo monorepo — core, backend, frontend — so orchestration can evolve without dragging the UI along.',
     ],
     facts: [
-      { label: 'Architecture', value: 'Multi-agent' },
-      { label: 'Repos', value: '3 (monorepo)' },
-      { label: 'Backend', value: 'Python' },
-      { label: 'Dashboard', value: 'React 19' },
+      { label: 'Agents live', value: '47' },
+      { label: 'Models wired', value: '38' },
+      { label: 'Tokens / 24h', value: '4.2M' },
+      { label: 'Connectors', value: '54 / 54' },
+    ],
+    media: [
+      {
+        kind: 'video',
+        src: '/media/scorp.mp4',
+        webm: '/media/scorp.webm',
+        poster: '/media/scorp-poster.jpg',
+        chrome: 'browser',
+        alt: 'The S-CORP dashboard: the SPARK autonomous engine with work moving across Inbox, Planning, Running, Review and Completed columns, a specialist agent sidebar, and a live status bar',
+        caption:
+          'SPARK running unattended. Briefs are generated, queued and executed by named specialists, and every job is visible on the board.',
+      },
     ],
     pos: [3.6, 1.9, -2.2],
     near: ['friday'],
@@ -195,10 +245,16 @@ export const PROJECTS: Project[] = [
       { label: 'Build step', value: 'None' },
       { label: 'Licence', value: 'MIT' },
     ],
-    shot: {
-      src: '/shots/orbit.jpg',
-      alt: 'The ORBIT starter running: a soft iridescent noise core drifting in a dark particle field',
-    },
+    media: [
+      {
+        kind: 'image',
+        src: '/shots/orbit.jpg',
+        chrome: 'browser',
+        alt: 'The ORBIT starter running: a soft iridescent noise core drifting in a dark particle field',
+        caption:
+          'ORBIT, live. A curl-noise core and an 8,000-point galaxy behind real, selectable HTML.',
+      },
+    ],
     repo: 'https://github.com/Dilip-kumar-22/orbit',
     live: 'https://dilip-kumar-22.github.io/orbit/',
     pos: [4.4, -2.0, 0.9],
@@ -209,25 +265,59 @@ export const PROJECTS: Project[] = [
     slug: 'friday',
     index: '05',
     name: 'FRIDAY',
-    tagline: 'Terminal-native assistant, 13 sub-agents',
+    tagline: 'A terminal assistant that remembers',
     status: 'private',
-    statusLabel: 'Private',
+    statusLabel: 'Private · F-OS 1.0',
     year: '2025',
-    stack: ['Python', 'Gemini'],
+    stack: ['Python', 'Gemini', 'SQLite', 'Embeddings'],
     summary:
-      'An assistant that lives in the terminal, built from 13 specialised sub-agents sitting on a three-tier memory architecture.',
+      'An assistant that lives in the terminal and does not forget. Three memory tiers sit behind it: a million-token working context, a markdown journal that compacts itself, and a 412 MB fact store holding 18,402 facts retrieved by hybrid vector and BM25 search. Trigger-routed sub-agents handle research, code, recall and the browser.',
     problem:
-      'General assistants forget, and one prompt cannot be good at thirteen different jobs. The design question was how to split responsibility across sub-agents while keeping one coherent memory behind all of them.',
+      'Assistants forget between sessions, and one prompt cannot be good at every job. Long context alone does not fix it — you cannot hold a year of working knowledge in a window, and stuffing it in makes the model worse and the bill larger. I wanted memory that behaves like memory: recent things instantly available, older things retrievable, everything durable.',
     approach: [
-      'Split the work across 13 specialised sub-agents rather than one generalist prompt.',
-      'Built memory in three tiers, so recent context, working state and durable facts stop competing for the same window.',
-      'Kept it terminal-native, because that is where the work already happens.',
+      'Split memory into three tiers that stop competing: T1 is the live 1M-token context, T2 is a markdown journal that auto-compacts at 8k tokens, T3 is a SQLite fact store.',
+      'Made T3 retrieval hybrid — dense embeddings plus BM25 — because pure vector search misses exact identifiers and pure keyword search misses paraphrase.',
+      'Routed sub-agents by trigger rather than by asking: Planner always, ResearchAgent on research, CodeAgent on code, MemoryAgent on recall, BrowserAgent on web.',
+      'Added a think mode that prints the inner monologue before the answer, so a wrong result is debuggable instead of mysterious.',
+      'Put connector health and per-turn cost in the status bar. It runs on gemini-3.1-pro with a claude-haiku-4.5 fallback, and shows exactly what each turn cost.',
     ],
     facts: [
-      { label: 'Sub-agents', value: '13' },
-      { label: 'Memory tiers', value: '3' },
-      { label: 'Interface', value: 'Terminal' },
-      { label: 'Model', value: 'Gemini' },
+      { label: 'Facts in memory', value: '18,402' },
+      { label: 'Memory store', value: '412 MB' },
+      { label: 'Retrieval', value: 'Vector + BM25' },
+      { label: 'Working context', value: '1M tokens' },
+    ],
+    media: [
+      {
+        kind: 'image',
+        src: '/shots/friday/03-think-mode.jpg',
+        chrome: 'terminal',
+        alt: 'FRIDAY in think mode: agent and connector panels with live latencies, a memory panel showing 18,402 facts, and the inner monologue printed before the answer',
+        caption:
+          'Think mode on. FRIDAY shows its reasoning before answering, with agents, connector latency and all three memory tiers live on the right.',
+      },
+      {
+        kind: 'image',
+        src: '/shots/friday/02-conversation.jpg',
+        chrome: 'terminal',
+        alt: 'FRIDAY config open beside the session: profile.yaml showing the model, the three memory tiers and the trigger-routed agent list',
+        caption:
+          'The whole assistant is configuration. Models, memory tiers and agent triggers are declared in YAML and editable while it runs.',
+      },
+      {
+        kind: 'image',
+        src: '/shots/friday/04-tool-cards.jpg',
+        chrome: 'terminal',
+        alt: 'FRIDAY rendering tool-call cards inline in the terminal as it works',
+        caption: 'Tool calls render as inline cards, so you can see what it actually did.',
+      },
+      {
+        kind: 'image',
+        src: '/shots/friday/01-boot.jpg',
+        chrome: 'terminal',
+        alt: 'FRIDAY booting: F-OS 1.0.0 loading tier-3 memory with 18,402 facts and arming scheduled tasks',
+        caption: 'Boot: tier-3 memory loads 18,402 facts and the scheduled tasks arm.',
+      },
     ],
     pos: [1.8, -1.6, 2.4],
     near: ['s-corp', 'bolo'],
@@ -257,10 +347,16 @@ export const PROJECTS: Project[] = [
       { label: 'Dependencies', value: 'Zero' },
       { label: 'Imagery', value: 'AI-generated' },
     ],
-    shot: {
-      src: '/shots/shanghai-48h.jpg',
-      alt: 'The 48 Hours in Shanghai opening chapter: the Pudong skyline at dusk under a full-bleed title',
-    },
+    media: [
+      {
+        kind: 'image',
+        src: '/shots/shanghai-48h.jpg',
+        chrome: 'browser',
+        alt: 'The 48 Hours in Shanghai opening chapter: the Pudong skyline at dusk under a full-bleed title',
+        caption:
+          'Chapter one. Six full-bleed scenes, no framework and no build step behind any of it.',
+      },
+    ],
     repo: 'https://github.com/Dilip-kumar-22/shanghai-48h',
     live: 'https://dilip-kumar-22.github.io/shanghai-48h/',
     pos: [0.4, 2.6, 1.2],

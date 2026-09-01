@@ -283,18 +283,18 @@ html:has(.cv) {
     margin: 0;
     padding: 0;
     background: #fff;
-    font-size: 9.1pt;
-    line-height: 1.38;
+    font-size: 8.45pt;
+    line-height: 1.31;
   }
   .cv-head { padding-bottom: 0.75rem; }
-  .cv-head h1 { font-size: 2.05rem; }
+  .cv-head h1 { font-size: 1.9rem; }
   .cv-head__role { margin: 0.3rem 0 0.45rem; font-size: 0.64rem; }
   .cv-contact { font-size: 8.4pt; gap: 0.15rem 0.85rem; }
   .cv-portrait { width: 88px; height: 88px; }
-  .cv-sec { margin-top: 0.72rem; }
+  .cv-sec { margin-top: 0.58rem; }
   .cv-sec > h2 { margin-bottom: 0.3rem; font-size: 0.6rem; }
-  .cv-proj { margin-top: 0.42rem; }
-  .cv-proj h3 { font-size: 10.6pt; }
+  .cv-proj { margin-top: 0.34rem; }
+  .cv-proj h3 { font-size: 9.9pt; }
   .cv-proj ul { margin-top: 0.16rem; }
   .cv-proj li { margin-bottom: 0.04rem; }
   .cv-proj__link { margin-top: 0.12rem; font-size: 7.6pt; }

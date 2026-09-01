@@ -52,3 +52,6 @@ scripts/settle.mjs
 # tooling scratch
 .claude/
 **/.claude/
+
+# raw capture masters (transcoded into public/media)
+asset/

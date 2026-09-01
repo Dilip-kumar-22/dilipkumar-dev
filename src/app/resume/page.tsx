@@ -28,14 +28,16 @@ const BULLETS: Record<string, string[]> = {
     'Kept all progress on-device with no account, added daily challenges and code-typing drills, and covered it with 137 passing tests.',
   ],
   's-corp': [
-    'Architected a multi-agent AI platform where agents hold defined roles and hand work to each other, on a Python backend.',
-    'Built a React 19 command dashboard for live control, and split the system into a three-repo monorepo (core / backend / frontend).',
+    'Architected an autonomous multi-agent platform: a router agent dispatches intent to named specialists, and an autonomous engine generates, queues and executes work across an Inbox → Running → Review board.',
+    'Wired 38 models across four providers behind one router, with 54 health-checked connectors, 18 scheduled jobs and Docker-sandboxed execution; runs ~4.2M tokens/day with live cost and latency metering.',
+    'Built the React 19 command dashboard, and split the system into a three-repo monorepo (core / backend / frontend).',
   ],
   orbit: [
     'Released an open-source 3D scrollytelling starter with HDR-safe post-processing (HalfFloat + 4× MSAA), an OKLCH palette shared between CSS and WebGL, and reduced-motion and no-WebGL fallbacks built in.',
   ],
   friday: [
-    'Built a terminal-native assistant from 13 specialised sub-agents over a three-tier memory architecture.',
+    'Built a terminal-native assistant on a three-tier memory architecture: a 1M-token working context, a self-compacting markdown journal, and a 412 MB store of 18,402 facts retrieved by hybrid vector + BM25 search.',
+    'Routed specialist sub-agents by trigger rather than by prompt, and added a think mode that prints the reasoning before the answer so failures are debuggable.',
   ],
 };
 
