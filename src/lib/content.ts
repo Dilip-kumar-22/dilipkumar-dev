@@ -15,7 +15,7 @@ export const PERSON = {
   role: 'AI/ML Engineer',
   subrole: 'Aspiring AI Researcher & Model Trainer',
   location: 'Punjab, India',
-  email: 'extraordinary.insaan@gmail.com',
+  email: 'sroy.dilip@gmail.com',
   phone: '+91 9234143051',
   reg: '12520272',
   links: {

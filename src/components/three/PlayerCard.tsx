@@ -39,6 +39,7 @@ uniform float uOpacity;
 uniform float uSweep;   // intro shine pass
 uniform float uFoil;    // foil strength, rises with tilt
 uniform float uBuild;   // assembly wipe
+uniform float uGain;    // pipeline compensation — see the note in the material
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vViewDir;
@@ -58,15 +59,18 @@ void main(){
   float band = sin((vUv.x * 0.85 + vUv.y) * 5.2 - uSweep * 10.0);
   float shine = smoothstep(0.82, 1.0, band) * uSweep * (1.0 - uSweep * 0.3);
 
-  // fresnel rim, so turning the card lifts its edges
-  float fres = pow(1.0 - clamp(dot(normalize(vNormalW), normalize(vViewDir)), 0.0, 1.0), 2.2);
+  // Fresnel rim. The interpolated normal always points out of the FRONT face,
+  // so on a back-facing fragment it points away from the viewer and the rim
+  // solves backwards. gl_FrontFacing is the only thing that can correct it.
+  vec3 N = normalize(vNormalW) * (gl_FrontFacing ? 1.0 : -1.0);
+  float fres = pow(1.0 - clamp(dot(N, normalize(vViewDir)), 0.0, 1.0), 2.2);
 
   // a slower foil band that only shows while the card is turned — this is the
   // part that makes it feel like a physical foil card rather than a picture
   float foilBand = sin((vUv.x - vUv.y) * 9.0 + uFoil * 6.0);
   float foil = smoothstep(0.55, 1.0, foilBand) * uFoil;
 
-  vec3 col = tex.rgb * 1.85;
+  vec3 col = tex.rgb * uGain;
   col += vec3(0.62, 0.78, 1.0) * shine * 0.55;
   col += vec3(1.0, 0.70, 0.32) * shine * 0.30;
   col += vec3(0.45, 0.85, 1.0) * foil * 0.16;
@@ -82,7 +86,6 @@ const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 export default function PlayerCard({ reduced }: { reduced: boolean }) {
   const { size } = useThree();
   const mesh = useRef<THREE.Mesh>(null);
-  const mat = useRef<THREE.ShaderMaterial>(null);
   const [tex, setTex] = useState<THREE.Texture | null>(null);
   const [back, setBack] = useState<THREE.Texture | null>(null);
   const [dead, setDead] = useState(false);
@@ -142,29 +145,54 @@ export default function PlayerCard({ reduced }: { reduced: boolean }) {
     };
   }, [reduced]);
 
-  const uniforms = useMemo(
-    () => ({
-      uMap: { value: null as THREE.Texture | null },
-      uBack: { value: null as THREE.Texture | null },
-      uOpacity: { value: 0 },
-      uSweep: { value: 0 },
-      uFoil: { value: 0 },
-      uBuild: { value: 0 },
-    }),
-    [],
-  );
+  /**
+   * Built imperatively rather than declared as <shaderMaterial uniforms={...}>.
+   * THREE.ShaderMaterial CLONES the uniforms object it is constructed with, so
+   * a memoised object passed as a prop is not the one the material reads —
+   * assigning a texture to it renders nothing, with no error. Owning the
+   * material means `material.uniforms` is the same object we write to.
+   */
+  const material = useMemo(() => {
+    const m = new THREE.ShaderMaterial({
+      uniforms: {
+        uMap: { value: null as THREE.Texture | null },
+        uBack: { value: null as THREE.Texture | null },
+        uOpacity: { value: 0 },
+        uSweep: { value: 0 },
+        uFoil: { value: 0 },
+        uBuild: { value: 0 },
+        uGain: { value: 1.45 },
+      },
+      vertexShader: cardVert,
+      fragmentShader: cardFrag,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      side: THREE.DoubleSide,
+    });
+    // NOTE on brightness. `m.toneMapped = false` does NOT help here: with an
+    // EffectComposer the scene renders to a float target and tonemapping is
+    // deferred to OutputPass, so the per-material flag never runs. ACES at
+    // exposure 0.96 therefore always compresses this card. uGain pre-brightens
+    // it so it lands on screen at the value it was authored at on the 2D
+    // canvas. It is compensation for a known pipeline stage, not a fudge.
+    return m;
+  }, []);
+
+  useEffect(() => () => material.dispose(), [material]);
+
+  // one assignment per texture, the moment it resolves
+  useEffect(() => {
+    if (tex) material.uniforms.uMap.value = tex;
+  }, [tex, material]);
+  useEffect(() => {
+    if (back) material.uniforms.uBack.value = back;
+  }, [back, material]);
 
   useFrame((state, delta) => {
     const m = mesh.current;
-    const sm = mat.current;
-    if (!m || !sm || !tex) return;
-    const u = sm.uniforms;
-
-    // THREE.ShaderMaterial CLONES the uniforms object it is constructed with,
-    // so assigning to the memoised object above never reaches the material.
-    // The texture has to be written to the material's own uniforms.
-    if (u.uMap.value !== tex) u.uMap.value = tex;
-    if (back && u.uBack.value !== back) u.uBack.value = back;
+    if (!m || !tex) return;
+    const u = material.uniforms;
 
     if (!t0.current) t0.current = state.clock.elapsedTime;
     const t = state.clock.elapsedTime - t0.current;
@@ -247,16 +275,7 @@ export default function PlayerCard({ reduced }: { reduced: boolean }) {
   return (
     <mesh ref={mesh} position={[0, -0.55, -6.5]} renderOrder={3}>
       <planeGeometry args={[W, H, 1, 1]} />
-      <shaderMaterial
-        ref={mat}
-        uniforms={uniforms}
-        vertexShader={cardVert}
-        fragmentShader={cardFrag}
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        side={THREE.DoubleSide}
-      />
+      <primitive object={material} attach="material" />
     </mesh>
   );
 }

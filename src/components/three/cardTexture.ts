@@ -17,11 +17,11 @@ export const CARD_H = 1434; // 5:7, the trading-card proportion
 
 const INK = '#0e1116';
 const PANEL = '#161b23';
-const LINE = '#3d4757';
+const LINE = '#4b5768';
 const AMBER = '#f0a339';
-const AMBER_DIM = '#a9702a';
+const AMBER_DIM = '#c58a3c';
 const HI = '#f4f5f7';
-const MID = '#aeb6c2';
+const MID = '#c2c9d4';
 
 export type CardStat = { label: string; value: string };
 
@@ -87,9 +87,9 @@ export async function buildCardTexture(portraitSrc: string): Promise<THREE.Canva
 
   /* ---------- ground ---------- */
   const g = c.createLinearGradient(0, 0, CARD_W * 0.6, CARD_H);
-  g.addColorStop(0, '#2e3a4c');
-  g.addColorStop(0.45, '#232c39');
-  g.addColorStop(1, '#161c25');
+  g.addColorStop(0, '#7d90ab');
+  g.addColorStop(0.45, '#5d6f8a');
+  g.addColorStop(1, '#3f4d61');
   roundRect(c, 0, 0, CARD_W, CARD_H, 54);
   c.fillStyle = g;
   c.fill();
@@ -113,41 +113,45 @@ export async function buildCardTexture(portraitSrc: string): Promise<THREE.Canva
     c.stroke();
   }
 
-  /* ---------- portrait ---------- */
+  /* ---------- portrait ----------
+     Masked on its OWN canvas and then stamped onto the card.
+     Doing the destination-in composite directly on the card punches the hole
+     through the card ground too — invisible while the stock was near-black,
+     glaringly obvious as a dark rectangle once it was lightened. */
   if (img) {
     const pw = 690;
     const ph = 690;
     const px = CARD_W - pw - 46;
     const py = 214;
-    c.save();
-    // fade the photo out at its edges so it sits in the card, not on it
-    const mask = c.createRadialGradient(
-      px + pw * 0.5,
-      py + ph * 0.46,
-      pw * 0.14,
-      px + pw * 0.5,
-      py + ph * 0.46,
-      pw * 0.47,
+
+    const lay = document.createElement('canvas');
+    lay.width = pw;
+    lay.height = ph;
+    const lc = lay.getContext('2d')!;
+
+    lc.drawImage(img, 0, 0, pw, ph);
+
+    // cool the photo toward the card's palette
+    lc.globalCompositeOperation = 'overlay';
+    lc.fillStyle = 'rgba(60,80,110,0.30)';
+    lc.fillRect(0, 0, pw, ph);
+
+    // fade it to nothing well inside its own bounds, so no edge can show
+    lc.globalCompositeOperation = 'destination-in';
+    const mask = lc.createRadialGradient(
+      pw * 0.5, ph * 0.46, pw * 0.14,
+      pw * 0.5, ph * 0.46, pw * 0.47,
     );
     mask.addColorStop(0, 'rgba(0,0,0,1)');
     mask.addColorStop(0.55, 'rgba(0,0,0,0.98)');
     mask.addColorStop(0.82, 'rgba(0,0,0,0.35)');
     mask.addColorStop(1, 'rgba(0,0,0,0)');
-    c.beginPath();
-    c.rect(px, py, pw, ph);
-    c.clip();
-    c.globalAlpha = 0.82;
-    c.drawImage(img, px, py, pw, ph);
-    c.globalCompositeOperation = 'destination-in';
-    c.fillStyle = mask;
-    c.fillRect(px, py, pw, ph);
-    c.restore();
+    lc.fillStyle = mask;
+    lc.fillRect(0, 0, pw, ph);
 
-    // cool the photo toward the card's palette
     c.save();
-    c.globalCompositeOperation = 'overlay';
-    c.fillStyle = 'rgba(60,80,110,0.30)';
-    c.fillRect(px, py, pw, ph);
+    c.globalAlpha = 0.92;
+    c.drawImage(lay, px, py);
     c.restore();
   }
   c.restore();
@@ -281,9 +285,9 @@ export async function buildCardBackTexture(): Promise<THREE.CanvasTexture> {
   const F = families();
 
   const g = c.createLinearGradient(0, 0, CARD_W, CARD_H);
-  g.addColorStop(0, '#232c39');
-  g.addColorStop(0.5, '#1a212b');
-  g.addColorStop(1, '#141a22');
+  g.addColorStop(0, '#6d7f99');
+  g.addColorStop(0.5, '#53637b');
+  g.addColorStop(1, '#3a4557');
   roundRect(c, 0, 0, CARD_W, CARD_H, 54);
   c.fillStyle = g;
   c.fill();
