@@ -32,7 +32,10 @@ const mono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-const SITE = 'https://dilipkumar.dev';
+// The live deployment. Change this if a custom domain is added — Open Graph
+// image and card URLs are resolved against it, so a wrong value here means
+// broken previews everywhere the link is shared.
+const SITE = 'https://dilipkumar-dev.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
