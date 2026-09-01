@@ -170,16 +170,10 @@ html:has(.cv) {
   break-inside: avoid;
 }
 .cv-proj__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.15rem 1rem;
+  display: block;
 }
 .cv-proj h3 {
   margin: 0;
-  flex: 1 1 22rem;
-  min-width: 0;              /* without this the title refuses to shrink */
   font-size: 11.2pt;
   font-weight: 600;
   color: var(--cv-ink);
@@ -192,9 +186,9 @@ html:has(.cv) {
   content: '· ';
 }
 .cv-proj__meta {
-  flex: 0 1 auto;
-  max-width: 100%;
-  text-align: right;
+  display: block;
+  margin-top: 0.06rem;
+  text-align: left;
   font-family: var(--font-mono), monospace;
   font-size: 8pt;
   color: var(--cv-soft);
@@ -267,12 +261,13 @@ html:has(.cv) {
 }
 
 /* ---------- print / PDF ---------- */
-/* Margins are supplied by the PDF generator (scripts/make-pdf.mjs), not here.
-   Declaring them in both places applies them twice: the right-hand column
-   walks off the sheet and a one-page CV silently becomes two. */
+/* This rule is the ONLY place page geometry is defined. Chrome honours a
+   CSS @page margin and IGNORES the `margin` option passed to page.pdf(), so
+   declaring margin:0 here shipped a CV printed edge-to-edge with the right
+   column clipped. The generator now passes preferCSSPageSize and nothing else. */
 @page {
   size: A4;
-  margin: 0;
+  margin: 14mm 15mm 12mm;
 }
 
 @media print {
@@ -283,20 +278,20 @@ html:has(.cv) {
     margin: 0;
     padding: 0;
     background: #fff;
-    font-size: 8.45pt;
-    line-height: 1.31;
+    font-size: 8.3pt;
+    line-height: 1.29;
   }
-  .cv-head { padding-bottom: 0.75rem; }
+  .cv-head { padding-bottom: 0.6rem; }
   .cv-head h1 { font-size: 1.9rem; }
   .cv-head__role { margin: 0.3rem 0 0.45rem; font-size: 0.64rem; }
   .cv-contact { font-size: 8.4pt; gap: 0.15rem 0.85rem; }
   .cv-portrait { width: 88px; height: 88px; }
-  .cv-sec { margin-top: 0.58rem; }
+  .cv-sec { margin-top: 0.46rem; }
   .cv-sec > h2 { margin-bottom: 0.3rem; font-size: 0.6rem; }
-  .cv-proj { margin-top: 0.34rem; }
+  .cv-proj { margin-top: 0.26rem; }
   .cv-proj h3 { font-size: 9.9pt; }
   .cv-proj ul { margin-top: 0.16rem; }
-  .cv-proj li { margin-bottom: 0.04rem; }
+  .cv-proj li { margin-bottom: 0.02rem; }
   .cv-proj__link { margin-top: 0.12rem; font-size: 7.6pt; }
   .cv-list li { margin-bottom: 0.05rem; }
   .cv-skills { gap: 0.12rem; }

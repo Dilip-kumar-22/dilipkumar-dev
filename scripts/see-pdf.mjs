@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+const b = await chromium.launch({ channel:'chrome', headless:false, args:['--disable-features=CalculateNativeWinOcclusion'] });
+const p = await b.newPage({ viewport:{width:1100,height:1450} });
+const file = process.argv[2], out = process.argv[3];
+await p.goto(pathToFileURL(resolve(file)).href);
+await p.waitForTimeout(4500);
+await p.screenshot({ path: out });
+console.log('rendered', file);
+await b.close();

@@ -289,6 +289,16 @@ export const PROJECTS: Project[] = [
     ],
     media: [
       {
+        kind: 'video',
+        src: '/media/friday.mp4',
+        webm: '/media/friday.webm',
+        poster: '/media/friday-poster.jpg',
+        chrome: 'terminal',
+        alt: 'FRIDAY running: it explains its three memory tiers, then reproduces a failing test, patches the file and re-runs it green, with agent, memory and schedule panels live alongside',
+        caption:
+          'FRIDAY working. It explains its own memory architecture, then reproduces a failing test, edits the file, re-runs it and reports green — with every tool call visible as it happens.',
+      },
+      {
         kind: 'image',
         src: '/shots/friday/03-think-mode.jpg',
         chrome: 'terminal',
