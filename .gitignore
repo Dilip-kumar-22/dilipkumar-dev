@@ -69,3 +69,11 @@ Dilip_Kumar_Resume.docx
 
 # verification artefacts
 .verify/
+
+# Working notes stay on this machine. The worklog records reasoning, dead ends
+# and third-party observations — none of which belong in a public repo.
+WORKLOG.md
+
+# Auto-generated agent guidance (next dev rewrites AGENTS.md on every run)
+AGENTS.md
+CLAUDE.md

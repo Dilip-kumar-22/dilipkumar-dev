@@ -44,7 +44,6 @@ graph TD
     subgraph Verify["Evidence"]
         VER["scripts/verify.mjs<br/>fps · reveals · blown highlights · screenshots @360/768/1440"]
         PDF["scripts/make-pdf.mjs<br/>/resume -> public PDF (page geometry lives in resume.css)"]
-        WL["WORKLOG.md"]
         PM["PROJECT_MAP.md — this file"]
     end
 
@@ -96,7 +95,7 @@ graph TD
     class SCROLL,FOCUS,SP state;
     class STAGE,FIELD,GLSL,TARGETS three;
     class SCRIM,PRE,DEN,LOSS,NAV,SECT ui;
-    class VER,WL,PM ev;
+    class VER,PDF,PM ev;
 ```
 
 ## Load-bearing rules (break these and the site breaks)
@@ -140,6 +139,12 @@ It is public, and it is the repository a recruiter opens. Keep out of it:
   workflow. Profiling spikes and screenshot one-offs get deleted, not committed.
 - **Raw capture masters.** `asset/` (~110 MB of screen recordings) is ignored;
   only the transcoded web media in `public/media` is tracked.
+- **The worklog.** `WORKLOG.md` records reasoning, dead ends and observations
+  about other people's work. It is kept on the local machine only — it was
+  committed once, and old revisions had to be purged from history because the
+  current file being clean says nothing about what earlier commits contain.
+- **Commentary on anyone else.** Invisible while you write it, obvious to
+  whoever reads the repo later.
 
 The CV in `public/` is public **on purpose** — the site offers it for download.
 It carries a phone number and email, which is a deliberate choice, not a leak.
